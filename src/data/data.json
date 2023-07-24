@@ -1,0 +1,182 @@
+{
+  "nodes": [
+    {
+      "id": "computer1",
+      "device_type": "computer",
+      "model": "Dell OptiPlex",
+      "manufacturer": "Dell",
+      "serial_number": "CP12345",
+      "ip_address": "192.168.1.100",
+      "mac_address": "A1:B2:C3:D4:E5:F6",
+      "group_number": 1
+    },
+    {
+      "id": "laptop1",
+      "device_type": "laptop",
+      "model": "HP Pavilion",
+      "manufacturer": "HP",
+      "serial_number": "LT67890",
+      "ip_address": "192.168.1.101",
+      "mac_address": "11:22:33:44:55:66",
+      "group_number": 1
+    },
+    {
+      "id": "phone1",
+      "device_type": "phone",
+      "model": "iPhone X",
+      "manufacturer": "Apple",
+      "serial_number": "PH98765",
+      "ip_address": "192.168.1.102",
+      "mac_address": "AA:BB:CC:DD:EE:FF",
+      "group_number": 1
+    },
+    {
+      "id": "printer1",
+      "device_type": "printer",
+      "model": "Epson WorkForce",
+      "manufacturer": "Epson",
+      "serial_number": "PR54321",
+      "ip_address": "192.168.1.103",
+      "mac_address": "12:34:56:78:90:AB",
+      "group_number": 2
+    },
+    {
+      "id": "server1",
+      "device_type": "server",
+      "model": "IBM Power System",
+      "manufacturer": "IBM",
+      "serial_number": "SV11111",
+      "ip_address": "192.168.1.200",
+      "mac_address": "CD:EF:GH:IJ:KL:MN",
+      "group_number": 3
+    },
+    {
+      "id": "switch1",
+      "device_type": "switch",
+      "model": "Cisco Catalyst",
+      "manufacturer": "Cisco",
+      "serial_number": "SW22222",
+      "ip_address": "192.168.1.254",
+      "mac_address": "XY:ZZ:WW:QQ:RR:SS",
+      "group_number": 3
+    },
+    {
+      "id": "modem1",
+      "device_type": "modem",
+      "model": "TP-Link Archer",
+      "manufacturer": "TP-Link",
+      "serial_number": "MD33333",
+      "ip_address": "192.168.0.1",
+      "mac_address": "FF:EE:DD:CC:BB:AA",
+      "group_number": 4
+    },
+    {
+      "id": "router1",
+      "device_type": "router",
+      "model": "Linksys WRT",
+      "manufacturer": "Linksys",
+      "serial_number": "RT44444",
+      "ip_address": "192.168.0.100",
+      "mac_address": "11:22:33:44:55:66",
+      "group_number": 4
+    },
+    {
+      "id": "firewall1",
+      "device_type": "firewall",
+      "model": "Fortinet FortiGate",
+      "manufacturer": "Fortinet",
+      "serial_number": "FW55555",
+      "ip_address": "192.168.0.254",
+      "mac_address": "CC:DD:EE:FF:AA:BB",
+      "group_number": 4
+    },
+    {
+      "id": "internet1",
+      "device_type": "internet",
+      "model": "ISP Connection",
+      "manufacturer": "ISP Inc.",
+      "serial_number": "ISP66666",
+      "ip_address": "Public IP",
+      "mac_address": "Public MAC",
+      "group_number": 5
+    },
+    {
+      "id": "coding1",
+      "device_type": "coding",
+      "model": "Developer Workstation",
+      "manufacturer": "Custom",
+      "serial_number": "CD77777",
+      "ip_address": "192.168.2.100",
+      "mac_address": "99:88:77:66:55:44",
+      "group_number": 6
+    }
+  ],
+  "edges": [
+    {
+      "source": "computer1",
+      "target": "switch1",
+      "label": "Ethernet",
+      "flow": 100
+    },
+    {
+      "source": "laptop1",
+      "target": "switch1",
+      "label": "Wi-Fi",
+      "flow": 50
+    },
+    {
+      "source": "phone1",
+      "target": "switch1",
+      "label": "Wi-Fi",
+      "flow": 25
+    },
+    {
+      "source": "printer1",
+      "target": "switch1",
+      "label": "USB",
+      "flow": 10
+    },
+    {
+      "source": "server1",
+      "target": "switch1",
+      "label": "Ethernet",
+      "flow": 80
+    },
+    {
+      "source": "switch1",
+      "target": "modem1",
+      "label": "Ethernet",
+      "flow": 100
+    },
+    {
+      "source": "modem1",
+      "target": "router1",
+      "label": "DSL",
+      "flow": 100
+    },
+    {
+      "source": "router1",
+      "target": "firewall1",
+      "label": "Ethernet",
+      "flow": 100
+    },
+    {
+      "source": "firewall1",
+      "target": "internet1",
+      "label": "External",
+      "flow": 100
+    },
+    {
+      "source": "coding1",
+      "target": "switch1",
+      "label": "Ethernet",
+      "flow": 50
+    },
+    {
+      "source": "coding1",
+      "target": "server1",
+      "label": "Ethernet",
+      "flow": 70
+    }
+  ]
+}

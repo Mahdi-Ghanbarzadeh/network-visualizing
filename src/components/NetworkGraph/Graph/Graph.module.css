@@ -1,0 +1,7 @@
+.graph {
+  /* background-color: black; */
+  /* width: 1000px; */
+  flex: 1;
+  border: 2px solid rgb(191, 191, 191);
+  border-radius: 5px;
+}
