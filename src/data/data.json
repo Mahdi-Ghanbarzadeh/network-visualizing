@@ -1,6 +1,16 @@
 {
   "nodes": [
     {
+      "id": "modem1",
+      "device_type": "modem",
+      "model": "TP-Link Archer",
+      "manufacturer": "TP-Link",
+      "serial_number": "MD33333",
+      "ip_address": "192.168.0.1",
+      "mac_address": "FF:EE:DD:CC:BB:AA",
+      "group_number": 0
+    },
+    {
       "id": "computer1",
       "device_type": "computer",
       "model": "Dell OptiPlex",
@@ -31,6 +41,16 @@
       "group_number": 1
     },
     {
+      "id": "router2",
+      "device_type": "router",
+      "model": "ASUS RT-AX",
+      "manufacturer": "ASUS",
+      "serial_number": "RT88888",
+      "ip_address": "192.168.0.101",
+      "mac_address": "AB:CD:EF:01:23:45",
+      "group_number": 1
+    },
+    {
       "id": "printer1",
       "device_type": "printer",
       "model": "Epson WorkForce",
@@ -38,7 +58,7 @@
       "serial_number": "PR54321",
       "ip_address": "192.168.1.103",
       "mac_address": "12:34:56:78:90:AB",
-      "group_number": 2
+      "group_number": 1
     },
     {
       "id": "server1",
@@ -48,7 +68,7 @@
       "serial_number": "SV11111",
       "ip_address": "192.168.1.200",
       "mac_address": "CD:EF:GH:IJ:KL:MN",
-      "group_number": 3
+      "group_number": 1
     },
     {
       "id": "switch1",
@@ -58,17 +78,7 @@
       "serial_number": "SW22222",
       "ip_address": "192.168.1.254",
       "mac_address": "XY:ZZ:WW:QQ:RR:SS",
-      "group_number": 3
-    },
-    {
-      "id": "modem1",
-      "device_type": "modem",
-      "model": "TP-Link Archer",
-      "manufacturer": "TP-Link",
-      "serial_number": "MD33333",
-      "ip_address": "192.168.0.1",
-      "mac_address": "FF:EE:DD:CC:BB:AA",
-      "group_number": 4
+      "group_number": 1
     },
     {
       "id": "router1",
@@ -78,7 +88,7 @@
       "serial_number": "RT44444",
       "ip_address": "192.168.0.100",
       "mac_address": "11:22:33:44:55:66",
-      "group_number": 4
+      "group_number": 2
     },
     {
       "id": "firewall1",
@@ -88,7 +98,7 @@
       "serial_number": "FW55555",
       "ip_address": "192.168.0.254",
       "mac_address": "CC:DD:EE:FF:AA:BB",
-      "group_number": 4
+      "group_number": 2
     },
     {
       "id": "internet1",
@@ -96,19 +106,90 @@
       "model": "ISP Connection",
       "manufacturer": "ISP Inc.",
       "serial_number": "ISP66666",
-      "ip_address": "Public IP",
-      "mac_address": "Public MAC",
-      "group_number": 5
+      "ip_address": "192.168.0.200",
+      "mac_address": "CC:01:EE:12:AA:33",
+      "group_number": 2
     },
     {
-      "id": "coding1",
-      "device_type": "coding",
-      "model": "Developer Workstation",
-      "manufacturer": "Custom",
-      "serial_number": "CD77777",
-      "ip_address": "192.168.2.100",
-      "mac_address": "99:88:77:66:55:44",
-      "group_number": 6
+      "id": "computer2",
+      "device_type": "computer",
+      "model": "Lenovo ThinkPad",
+      "manufacturer": "Lenovo",
+      "serial_number": "CP67890",
+      "ip_address": "192.168.1.200",
+      "mac_address": "AB:CD:EF:01:23:45",
+      "group_number": 2
+    },
+    {
+      "id": "laptop2",
+      "device_type": "laptop",
+      "model": "Dell Inspiron",
+      "manufacturer": "Dell",
+      "serial_number": "LT23456",
+      "ip_address": "192.168.1.201",
+      "mac_address": "12:34:56:78:90:12",
+      "group_number": 2
+    },
+    {
+      "id": "phone2",
+      "device_type": "phone",
+      "model": "Samsung Galaxy",
+      "manufacturer": "Samsung",
+      "serial_number": "PH45678",
+      "ip_address": "192.168.1.202",
+      "mac_address": "FF:AA:BB:CC:DD:EE",
+      "group_number": 3
+    },
+    {
+      "id": "firewall2",
+      "device_type": "firewall",
+      "model": "SonicWall TZ",
+      "manufacturer": "SonicWall",
+      "serial_number": "FW99999",
+      "ip_address": "192.168.0.253",
+      "mac_address": "FF:AA:BB:CC:DD:EE",
+      "group_number": 3
+    },
+
+    {
+      "id": "printer2",
+      "device_type": "printer",
+      "model": "HP LaserJet",
+      "manufacturer": "HP",
+      "serial_number": "PR09876",
+      "ip_address": "192.168.1.104",
+      "mac_address": "11:22:33:44:55:66",
+      "group_number": 3
+    },
+    {
+      "id": "server2",
+      "device_type": "server",
+      "model": "Dell PowerEdge",
+      "manufacturer": "Dell",
+      "serial_number": "SV22222",
+      "ip_address": "192.168.1.201",
+      "mac_address": "12:34:56:78:90:AB",
+      "group_number": 3
+    },
+    {
+      "id": "switch2",
+      "device_type": "switch",
+      "model": "Juniper EX",
+      "manufacturer": "Juniper",
+      "serial_number": "SW33333",
+      "ip_address": "192.168.1.255",
+      "mac_address": "CC:DD:EE:FF:AA:BB",
+      "group_number": 3
+    },
+    {
+      "id": "modem2",
+      "device_type": "modem",
+      "model": "Netgear Nighthawk",
+      "manufacturer": "Netgear",
+      "serial_number": "MD77777",
+      "ip_address": "192.168.0.2",
+      "mac_address": "01:23:45:67:89:AB",
+      "group_number": 3
     }
   ],
   "edges": [
@@ -158,25 +239,115 @@
       "source": "router1",
       "target": "firewall1",
       "label": "Ethernet",
+      "flow": 0
+    },
+    {
+      "source": "router1",
+      "target": "internet1",
+      "label": "Ethernet",
+      "flow": 100
+    },
+    {
+      "source": "router1",
+      "target": "computer2",
+      "label": "Ethernet",
+      "flow": 0
+    },
+    {
+      "source": "router1",
+      "target": "laptop2",
+      "label": "Ethernet",
+      "flow": 100
+    },
+    {
+      "source": "internet1",
+      "target": "firewall1",
+      "label": "Ethernet",
+      "flow": 0
+    },
+    {
+      "source": "internet1",
+      "target": "computer2",
+      "label": "Ethernet",
+      "flow": 100
+    },
+    {
+      "source": "internet1",
+      "target": "laptop2",
+      "label": "Ethernet",
+      "flow": 0
+    },
+    {
+      "source": "computer2",
+      "target": "firewall1",
+      "label": "Ethernet",
+      "flow": 100
+    },
+    {
+      "source": "computer2",
+      "target": "laptop2",
+      "label": "Ethernet",
       "flow": 100
     },
     {
       "source": "firewall1",
-      "target": "internet1",
-      "label": "External",
+      "target": "laptop2",
+      "label": "Ethernet",
       "flow": 100
     },
     {
-      "source": "coding1",
+      "source": "router2",
       "target": "switch1",
       "label": "Ethernet",
       "flow": 50
     },
     {
-      "source": "coding1",
-      "target": "server1",
-      "label": "Ethernet",
-      "flow": 70
+      "source": "computer2",
+      "target": "laptop2",
+      "label": "DSL",
+      "flow": 50
+    },
+    {
+      "source": "phone2",
+      "target": "modem1",
+      "label": "DSL",
+      "flow": 100
+    },
+    {
+      "source": "phone2",
+      "target": "firewall2",
+      "label": "DSL",
+      "flow": 100
+    },
+    {
+      "source": "firewall2",
+      "target": "printer2",
+      "label": "DSL",
+      "flow": 100
+    },
+    {
+      "source": "printer2",
+      "target": "server2",
+      "label": "DSL",
+      "flow": 100
+    },
+    {
+      "source": "server2",
+      "target": "switch2",
+      "label": "DSL",
+      "flow": 100
+    },
+    {
+      "source": "switch2",
+      "target": "modem2",
+      "label": "DSL",
+      "flow": 100
+    },
+    {
+      "source": "modem2",
+      "target": "phone2",
+      "label": "DSL",
+      "flow": 100
     }
   ]
 }
