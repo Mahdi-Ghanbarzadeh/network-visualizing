@@ -20,6 +20,7 @@ const GraphVisualization = ({ data }) => {
   const nodeRadius = 25;
   const nodeLabelVisibility = true;
   const edgeLabelVisibility = true;
+  const zoomScale = [1, 5];
 
   const getIcon = (device_type) => {
     switch (device_type) {
@@ -44,33 +45,36 @@ const GraphVisualization = ({ data }) => {
       case "internet":
         return "icons/internet.svg";
       default:
-        return "icons/coding.svg"; // set a better default icon
+        return "icons/coding.svg";
     }
   };
 
   useEffect(() => {
     // D3 code to create the graph visualization
-    const svg = d3.select(graphRef.current);
+    const zoom = d3
+      .zoom()
+      .scaleExtent([zoomScale[0], zoomScale[1]])
+      .on("zoom", zoomed);
 
-    // doesn't work
-    // svg
-    //   .append("svg")
-    //   .attr("width", width + margin.left + margin.right)
-    //   .attr("height", height + margin.top + margin.bottom)
-    //   .append("g")
-    //   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    const svg = d3
+      .select(graphRef.current)
+      .attr("width", width)
+      .attr("height", height)
+      .call(zoom);
 
-    // const simulation = d3
-    //   .forceSimulation(data.nodes)
-    //   .force(
-    //     "link",
-    //     d3
-    //       .forceLink(data.edges)
-    //       .id((d) => d.id)
-    //       .distance(80)
-    //   )
-    //   .force("charge", d3.forceManyBody().strength(-300))
-    //   .force("center", d3.forceCenter(width / 2, height / 2));
+    const g = svg.select("g");
+    if (g.empty()) {
+      // Create the 'g' element only if it doesn't exist yet
+      // if it doesn't check, the graph will be shown twice
+      svg.append("g");
+    }
+
+    // Add the Zoom behavior to the SVG container
+    // const zoom = d3.zoom().on("zoom", (event) => {
+    //   svg.attr("transform", event.transform);
+    // });
+
+    // svg.call(zoom);
 
     // added to handle collision of a text with other nodes and texts
     const simulation = d3
@@ -87,22 +91,21 @@ const GraphVisualization = ({ data }) => {
       .force(
         "collide",
         d3
-          .forceCollide(nodeRadius + 5)
+          .forceCollide(nodeRadius + 10)
           .strength(0.7)
           .iterations(5)
       ); // Add forceCollide for collision detection
 
-    const link = svg
+    const link = g
       .selectAll("line")
       .data(data.edges)
       .enter()
       .append("line")
       .style("stroke", "#ccc")
       .style("stroke-width", edgeWidth)
-      .style("opacity", 0.6); // Add some opacity to the edges
+      .style("opacity", 0.6);
 
-    // Conditionally show or hide edge labels base on edgeLabelVisibility variable
-    const linkLabels = svg
+    const linkLabels = g
       .selectAll(".link-label")
       .data(data.edges)
       .enter()
@@ -115,7 +118,7 @@ const GraphVisualization = ({ data }) => {
       .style("background-color", "#fff")
       .text((d) => (edgeLabelVisibility ? d.label : ""));
 
-    const node = svg
+    const node = g
       .selectAll("g")
       .data(data.nodes)
       .enter()
@@ -140,10 +143,10 @@ const GraphVisualization = ({ data }) => {
             d.fy = null;
           })
       )
-      .on("click", handleClick); // Add click event handler
+      .on("click", nodeHandleClick);
 
     // Click event handler
-    function handleClick(event, d) {
+    function nodeHandleClick(event, d) {
       if (setClickedNode === d) {
         // If the clicked node is already clicked, reset the styles
         resetStyles();
@@ -176,12 +179,12 @@ const GraphVisualization = ({ data }) => {
           .filter((node) => siblingNodes.includes(node))
           .style("opacity", 1)
           .style("filter", "none")
-          .select("circle") // Select the circle element within the node to apply styles
+          .select("circle")
           .style("fill", (node) =>
             node === clickedNode ? "steelblue" : "steelblue"
-          ) // Use gray color for the clicked node
+          )
           .style("stroke", (node) => (node === clickedNode ? "#ddd" : "#bbb"))
-          .style("stroke-width", (node) => (node === clickedNode ? 3.5 : 1.5));
+          .style("stroke-width", (node) => (node === clickedNode ? 3.5 : 2));
 
         node
           .filter((node) => !siblingNodes.includes(node))
@@ -224,7 +227,7 @@ const GraphVisualization = ({ data }) => {
           .style("opacity", 0.4)
           .style("filter", "grayscale(70%)");
 
-        // Set the clicked node in order to reset
+        // Set the clicked node in order to keep and reset it
         setClickedNode = clickedNode;
       }
     }
@@ -238,13 +241,11 @@ const GraphVisualization = ({ data }) => {
         .style("fill", "steelblue")
         .style("stroke", "#bbb")
         .style("stroke-width", 1);
-      // node.style("opacity", 1).style("filter", "none");
+
       link.style("opacity", 0.6).style("filter", "none");
       linkLabels.style("opacity", 1).style("filter", "none");
       setClickedNode = null;
     }
-
-    // node.append("circle").attr("r", nodeRadius).style("fill", "steelblue");
 
     // Append an outer circle to add a border to the node
     node
@@ -253,15 +254,14 @@ const GraphVisualization = ({ data }) => {
       .style("fill", "steelblue")
       .style("stroke", "#bbb")
       .style("stroke-width", 1);
-    // .style("pointer-events", "none"); // Disable pointer events on the border
 
     // Append the SVG icon image to each node's g element
     node
       .append("image")
-      .attr("x", -15) // Adjust the positioning of the image within the node
+      .attr("x", -15)
       .attr("y", -15)
-      .attr("width", 30) // Set the width of the image
-      .attr("height", 30) // Set the height of the image
+      .attr("width", 30) //  width of the image
+      .attr("height", 30) // height of the image
       .attr("href", (d) => getIcon(d.device_type));
 
     // Display the node IP above it if nodeLabelVisibility is true
@@ -273,8 +273,6 @@ const GraphVisualization = ({ data }) => {
       .style("fill", "#fff")
       .text((d) => (nodeLabelVisibility ? d.ip_address : ""));
 
-    // node.append("title").text((d) => d.id);
-
     // Create the tooltip element
     const tooltip = d3
       .select("body")
@@ -284,7 +282,6 @@ const GraphVisualization = ({ data }) => {
 
     node
       .on("mouseover", (event, d) => {
-        // Show the tooltip on hover
         tooltip.transition().duration(200).style("opacity", 0.9);
         // Position the tooltip
         tooltip
@@ -299,26 +296,31 @@ const GraphVisualization = ({ data }) => {
         tooltip.transition().duration(500).style("opacity", 0);
       });
 
-    simulation.on("tick", () => {
-      // Update the position of the nodes during each tick
-      node.attr("transform", (d) => {
-        // Ensure nodes stay within SVG bounds
-        d.x = Math.max(20, Math.min(width - (nodeRadius + 10), d.x));
-        d.y = Math.max(20, Math.min(height - (nodeRadius + 10), d.y));
-        return `translate(${d.x},${d.y})`;
-      });
+    function zoomed({ transform }) {
+      g.attr("transform", transform);
+    }
 
-      link
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+    // the function tested, but the button doesn't exist.
+    function zoomReset() {
+      svg
+        .transition()
+        .duration(750)
+        .call(
+          zoom.transform,
+          d3.zoomIdentity,
+          d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
+        );
+    }
 
-      // Position the link labels at the midpoint between the source and target nodes
-      linkLabels
-        .attr("x", (d) => (d.source.x + d.target.x) / 2)
-        .attr("y", (d) => (d.source.y + d.target.y) / 2);
-    });
+    // the function tested, but the button doesn't exist.
+    function zoomIn() {
+      svg.transition().call(zoom.scaleBy, 2);
+    }
+
+    // the function tested, but the button doesn't exist.
+    function zoomOut() {
+      svg.transition().call(zoom.scaleBy, 0.5);
+    }
 
     simulation.on("tick", () => {
       link
@@ -344,7 +346,7 @@ const GraphVisualization = ({ data }) => {
   return (
     <div className={styles.graph}>
       <svg ref={graphRef} width={width} height={height}>
-        {/* Graph will be drawn here */}
+        {/* Create a container for the graph elements */}
       </svg>
     </div>
   );
