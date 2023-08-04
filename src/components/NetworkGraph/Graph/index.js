@@ -43,12 +43,12 @@ const GraphVisualization = ({ data }) => {
     },
     forceX: {
       enabled: false,
-      strength: 0.1,
+      strength: 0.05,
       x: 0.5,
     },
     forceY: {
       enabled: false,
-      strength: 0.1,
+      strength: 0.05,
       y: 0.5,
     },
     link: {
