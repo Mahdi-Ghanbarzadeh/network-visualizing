@@ -1,8 +1,10 @@
 .sidebar {
   width: 35rem;
   /* height: 100vh; */
-  border: 2px solid rgb(191, 191, 191);
-  border-radius: 5px;
+
+  /* border: 2px solid rgb(191, 191, 191); */
+  /* border-radius: 5px; */
+
   /* color: white; */
   /* background-color: whitesmoke; */
 }

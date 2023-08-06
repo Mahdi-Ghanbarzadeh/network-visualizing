@@ -7,19 +7,15 @@ import {
   Divider,
   Switch,
 } from "antd";
+import { Tooltip } from "../../Common/Tooltip";
+
 import styles from "./Sidebar.module.css";
 import { style } from "d3";
 const { Panel } = Collapse;
 
 const Sidebar = ({ forceProperties, setForceProperties }) => {
-  const [properties, setProperties] = useState(forceProperties);
-
-  const handleFormSubmit = () => {
-    setForceProperties(properties);
-  };
-
   const handleChange = (section, key, value) => {
-    setProperties((prevProperties) => ({
+    setForceProperties((prevProperties) => ({
       ...prevProperties,
       [section]: {
         ...prevProperties[section],
@@ -28,8 +24,8 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
     }));
   };
 
-  console.log("--properties--");
-  console.log(properties);
+  // console.log("--forceProperties--");
+  // console.log(forceProperties);
 
   return (
     <div className={styles.sidebar}>
@@ -43,6 +39,9 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
           components: {
             Collapse: {
               // colorText: "black",
+              colorBorder: "rgb(191, 191, 191)",
+              borderRadiusLG: "5",
+              lineWidth: "2",
             },
             InputNumber: {
               // colorText: "black",
@@ -53,6 +52,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
         <Collapse
           size="large"
           defaultActiveKey={["representation", "filter", "style"]}
+          style={{
+            minHeight: "688.8px",
+            maxHeight: "688.8px",
+            overflowY: "auto",
+          }}
           // className={styles.collapse}
         >
           <Panel header="Network Representation" key="representation">
@@ -64,34 +68,43 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </span>
 
                 <div className={styles.column}>
-                  <span>X:</span>
+                  <span>
+                    X-Center{" "}
+                    <Tooltip title="A value between 0 and 1, indicating the x-coordinate of the center point. 0 represents the left edge of the container, and 1 represents the right edge."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
                     max={1}
                     step={0.01}
-                    value={properties.center.x}
+                    value={forceProperties.center.x}
                     onChange={(value) => handleChange("center", "x", value)}
                     className={style.test}
                   />
                 </div>
 
                 <div className={styles.column}>
-                  <span>Y:</span>
+                  <span>
+                    Y-Center{" "}
+                    <Tooltip title="A value between 0 and 1, indicating the y-coordinate of the center point. 0 represents the top edge of the container, and 1 represents the bottom edge."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
                     max={1}
                     step={0.01}
-                    value={properties.center.y}
+                    value={forceProperties.center.y}
                     onChange={(value) => handleChange("center", "y", value)}
                   />
                 </div>
                 <div className={styles.row}>
-                  <span>Strength:</span>
+                  <span>
+                    Strength{" "}
+                    <Tooltip title="A value between 0.1 and 2, representing the strength of the centering force. Higher values will result in stronger attraction towards the center. A reduced strength softens the movements on interactive graphs in which new nodes enter or exit the graph."></Tooltip>
+                  </span>
                   <InputNumber
                     min={0.1}
-                    max={2}
+                    max={1}
                     step={0.1}
-                    value={properties.center.strength}
+                    value={forceProperties.center.strength}
                     onChange={(value) =>
                       handleChange("center", "strength", value)
                     }
@@ -103,33 +116,36 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
 
               <div className={styles.panel}>
                 <span>
-                  <b> Charge: </b> Attracts (+) or repels (-) nodes to/from each
-                  other.
+                  <b> Charge: </b> Attracts (+) or repels (-) nodes to / from
+                  each other.
                 </span>
 
                 <div className={styles.row}>
-                  <span>Charge Status:</span>
+                  <span>Charge Status</span>
                   <Switch
                     checkedChildren="On"
                     unCheckedChildren="Off"
                     onChange={(value) =>
                       handleChange("charge", "enabled", value)
                     }
-                    checked={properties.charge.enabled}
+                    checked={forceProperties.charge.enabled}
                   />
                 </div>
 
                 <div className={styles.row}>
-                  <span>Strength:</span>
+                  <span>
+                    Strength{" "}
+                    <Tooltip title="A value between 0 and 1, indicating the x-coordinate of the center point. 0 represents the left edge of the container, and 1 represents the right edge."></Tooltip>
+                  </span>
                   <InputNumber
                     min={-1000}
                     max={-100}
-                    step={20}
-                    value={properties.charge.strength}
+                    step={50}
+                    value={forceProperties.charge.strength}
                     onChange={(value) =>
                       handleChange("charge", "strength", value)
                     }
-                    disabled={!properties.charge.enabled}
+                    disabled={!forceProperties.charge.enabled}
                   />
                 </div>
 
@@ -139,11 +155,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={1}
                     max={50}
                     step={1}
-                    value={properties.charge.distanceMin}
+                    value={forceProperties.charge.distanceMin}
                     onChange={(value) =>
                       handleChange("charge", "distanceMin", value)
                     }
-                    disabled={!properties.charge.enabled}
+                    disabled={!forceProperties.charge.enabled}
                   />
                 </div>
 
@@ -153,11 +169,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={1}
                     max={2000}
                     step={1}
-                    value={properties.charge.distanceMax}
+                    value={forceProperties.charge.distanceMax}
                     onChange={(value) =>
                       handleChange("charge", "distanceMax", value)
                     }
-                    disabled={!properties.charge.enabled}
+                    disabled={!forceProperties.charge.enabled}
                   />
                 </div>
 
@@ -167,9 +183,9 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={-1}
                     max={1}
                     step={0.01}
-                    value={properties.charge.theta}
+                    value={forceProperties.charge.theta}
                     onChange={(value) => handleChange("charge", "theta", value)}
-                    disabled={!properties.charge.enabled}
+                    disabled={!forceProperties.charge.enabled}
                   />
                 </div>
               </div>
@@ -189,7 +205,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     onChange={(value) =>
                       handleChange("collide", "enabled", value)
                     }
-                    checked={properties.collide.enabled}
+                    checked={forceProperties.collide.enabled}
                   />
                 </div>
 
@@ -199,11 +215,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={10}
                     max={40}
                     step={1}
-                    value={properties.collide.radius}
+                    value={forceProperties.collide.radius}
                     onChange={(value) =>
                       handleChange("collide", "radius", value)
                     }
-                    disabled={!properties.collide.enabled}
+                    disabled={!forceProperties.collide.enabled}
                   />
                 </div>
 
@@ -213,11 +229,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={2}
                     step={0.1}
-                    value={properties.collide.strength}
+                    value={forceProperties.collide.strength}
                     onChange={(value) =>
                       handleChange("collide", "strength", value)
                     }
-                    disabled={!properties.collide.enabled}
+                    disabled={!forceProperties.collide.enabled}
                   />
                 </div>
 
@@ -227,11 +243,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={1}
                     max={10}
                     step={1}
-                    value={properties.collide.iterations}
+                    value={forceProperties.collide.iterations}
                     onChange={(value) =>
                       handleChange("collide", "iterations", value)
                     }
-                    disabled={!properties.collide.enabled}
+                    disabled={!forceProperties.collide.enabled}
                   />
                 </div>
               </div>
@@ -252,7 +268,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     onChange={(value) =>
                       handleChange("forceX", "enabled", value)
                     }
-                    checked={properties.forceX.enabled}
+                    checked={forceProperties.forceX.enabled}
                   />
                 </div>
 
@@ -262,11 +278,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={1}
                     step={0.01}
-                    value={properties.forceX.strength}
+                    value={forceProperties.forceX.strength}
                     onChange={(value) =>
                       handleChange("forceX", "strength", value)
                     }
-                    disabled={!properties.forceX.enabled}
+                    disabled={!forceProperties.forceX.enabled}
                   />
                 </div>
 
@@ -276,9 +292,9 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={1}
                     step={0.01}
-                    value={properties.forceX.x}
+                    value={forceProperties.forceX.x}
                     onChange={(value) => handleChange("forceX", "x", value)}
-                    disabled={!properties.forceX.enabled}
+                    disabled={!forceProperties.forceX.enabled}
                   />
                 </div>
               </div>
@@ -299,7 +315,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     onChange={(value) =>
                       handleChange("forceY", "enabled", value)
                     }
-                    checked={properties.forceY.enabled}
+                    checked={forceProperties.forceY.enabled}
                   />
                 </div>
 
@@ -309,11 +325,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={1}
                     step={0.01}
-                    value={properties.forceY.strength}
+                    value={forceProperties.forceY.strength}
                     onChange={(value) =>
                       handleChange("forceY", "strength", value)
                     }
-                    disabled={!properties.forceY.enabled}
+                    disabled={!forceProperties.forceY.enabled}
                   />
                 </div>
 
@@ -323,9 +339,9 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={1}
                     step={0.01}
-                    value={properties.forceY.y}
+                    value={forceProperties.forceY.y}
                     onChange={(value) => handleChange("forceY", "y", value)}
-                    disabled={!properties.forceY.enabled}
+                    disabled={!forceProperties.forceY.enabled}
                   />
                 </div>
               </div>
@@ -343,7 +359,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     checkedChildren="On"
                     unCheckedChildren="Off"
                     onChange={(value) => handleChange("link", "enabled", value)}
-                    checked={properties.link.enabled}
+                    checked={forceProperties.link.enabled}
                   />
                 </div>
 
@@ -353,11 +369,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={100}
                     step={1}
-                    value={properties.link.distance}
+                    value={forceProperties.link.distance}
                     onChange={(value) =>
                       handleChange("link", "distance", value)
                     }
-                    disabled={!properties.link.enabled}
+                    disabled={!forceProperties.link.enabled}
                   />
                 </div>
 
@@ -367,11 +383,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={1}
                     max={10}
                     step={1}
-                    value={properties.link.iterations}
+                    value={forceProperties.link.iterations}
                     onChange={(value) =>
                       handleChange("link", "iterations", value)
                     }
-                    disabled={!properties.link.enabled}
+                    disabled={!forceProperties.link.enabled}
                   />
                 </div>
 
@@ -381,11 +397,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={2}
                     step={0.01}
-                    value={properties.link.strength}
+                    value={forceProperties.link.strength}
                     onChange={(value) =>
                       handleChange("link", "strength", value)
                     }
-                    disabled={!properties.link.enabled}
+                    disabled={!forceProperties.link.enabled}
                   />
                 </div>
               </div>
@@ -405,7 +421,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     onChange={(value) =>
                       handleChange("radial", "enabled", value)
                     }
-                    checked={properties.radial.enabled}
+                    checked={forceProperties.radial.enabled}
                   />
                 </div>
 
@@ -415,11 +431,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={2}
                     step={0.01}
-                    value={properties.radial.strength}
+                    value={forceProperties.radial.strength}
                     onChange={(value) =>
                       handleChange("radial", "strength", value)
                     }
-                    disabled={!properties.radial.enabled}
+                    disabled={!forceProperties.radial.enabled}
                   />
                 </div>
 
@@ -429,24 +445,24 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                     min={0}
                     max={100}
                     step={1}
-                    value={properties.radial.radius}
+                    value={forceProperties.radial.radius}
                     onChange={(value) =>
                       handleChange("radial", "radius", value)
                     }
-                    disabled={!properties.radial.enabled}
+                    disabled={!forceProperties.radial.enabled}
                   />
                 </div>
               </div>
             </div>
           </Panel>
           <Panel header="Network Filter" key="filter">
-            {/* Add input fields for charge properties */}
+            {/* Add input fields for charge forceProperties */}
           </Panel>
           <Panel header="Network Style" key="style">
-            {/* Add input fields for collide properties */}
+            {/* Add input fields for collide forceProperties */}
           </Panel>
 
-          <button onClick={handleFormSubmit}>Apply</button>
+          {/* <button onClick={handleFormSubmit}>Apply</button> */}
         </Collapse>
       </ConfigProvider>
     </div>

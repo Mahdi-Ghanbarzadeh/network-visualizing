@@ -2,69 +2,29 @@ import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import styles from "./Graph.module.css";
 
-const GraphVisualization = ({ data }) => {
-  console.log(data);
+const GraphVisualization = ({
+  width,
+  height,
+  edge_width,
+  node_radius,
+  node_label_visibility,
+  edge_label_visibility,
+  zoom_scale,
+  force_properties,
+  data,
+}) => {
+  console.log("force properties in graph");
+  console.log(force_properties);
   const graphRef = useRef();
-
-  // set the dimensions and margins of the graph
-  const margin = { top: 10, right: 0, bottom: 10, left: 10 },
-    width = 1100 - margin.left - margin.right,
-    height = 700 - margin.top - margin.bottom;
 
   // variable to keep track of clicked nodes in order to reset styles
   let setClickedNode = null;
 
-  // const width = 1100;
-  // const height = 700; // Adjusted height to fit the graph inside the SVG element
-  const edgeWidth = 2;
-  const nodeRadius = 25;
-  const nodeLabelVisibility = true;
-  const edgeLabelVisibility = true;
-  const zoomScale = [1, 5];
-
-  const forceProperties = {
-    center: {
-      x: 0.5, // min: 0, max: 1
-      y: 0.5, // min: 0, max: 1
-      strength: 1, // min: 0.1 max: 2
-    },
-    charge: {
-      enabled: true,
-      strength: -300, // min: -1000, max: -100
-      distanceMin: 1, // min: 1, max: 1
-      distanceMax: 2000, // min: 1000, max: 5000
-      theta: 0, // min: -1, max: 1
-    },
-    collide: {
-      enabled: true,
-      radius: nodeRadius + 10,
-      strength: 0.7,
-      iterations: 5,
-    },
-    forceX: {
-      enabled: false,
-      strength: 0.05,
-      x: 0.5,
-    },
-    forceY: {
-      enabled: false,
-      strength: 0.05,
-      y: 0.5,
-    },
-    link: {
-      enabled: true,
-      distance: 80,
-      iterations: 1,
-      strength: 1, // set
-    },
-    radial: {
-      enabled: false, // set
-      strength: 0, // if set, the
-      radius: 30, // set
-      x: width / 2, // had set
-      y: height / 2, // had set
-    },
-  };
+  // Create a ref to store the simulation, link, linkLabels and node instance
+  const simulationRef = useRef(null);
+  const linkRef = useRef();
+  const linkLabelsRef = useRef();
+  const nodeRef = useRef();
 
   const getIcon = (device_type) => {
     switch (device_type) {
@@ -97,7 +57,7 @@ const GraphVisualization = ({ data }) => {
     // D3 code to create the graph visualization
     const zoom = d3
       .zoom()
-      .scaleExtent([zoomScale[0], zoomScale[1]])
+      .scaleExtent([zoom_scale[0], zoom_scale[1]])
       .on("zoom", zoomed);
 
     const svg = d3
@@ -113,85 +73,16 @@ const GraphVisualization = ({ data }) => {
       svg.append("g");
     }
 
-    // Add the Zoom behavior to the SVG container
-    // const zoom = d3.zoom().on("zoom", (event) => {
-    //   svg.attr("transform", event.transform);
-    // });
-
-    // svg.call(zoom);
-
-    // added to handle collision of a text with other nodes and texts
-    const simulation = d3
-      .forceSimulation(data.nodes)
-      .force(
-        "center",
-        d3
-          .forceCenter()
-          .x(width * forceProperties.center.x)
-          .y(height * forceProperties.center.y)
-          .strength(forceProperties.center.strength)
-      )
-      .force(
-        "charge",
-        d3
-          .forceManyBody()
-          .strength(forceProperties.charge.strength)
-          .distanceMin(forceProperties.charge.distanceMin)
-          .distanceMax(forceProperties.charge.distanceMax)
-          .theta(forceProperties.charge.theta)
-      )
-      .force(
-        "collide",
-        d3
-          .forceCollide()
-          .radius(forceProperties.collide.radius)
-          .strength(forceProperties.collide.strength)
-          .iterations(forceProperties.collide.iterations)
-      )
-      .force(
-        "forceX",
-        d3
-          .forceX()
-          .strength(forceProperties.forceX.strength)
-          .x(forceProperties.forceX.x)
-      )
-      .force(
-        "forceY",
-        d3
-          .forceY()
-          .strength(forceProperties.forceY.strength)
-          .y(forceProperties.forceY.y)
-      )
-      .force(
-        "link",
-        d3
-          .forceLink(data.edges)
-          .id((d) => d.id)
-          .distance(forceProperties.link.distance)
-          .iterations(forceProperties.link.iterations)
-          .strength(forceProperties.link.strength)
-      )
-      .force(
-        "radial",
-        d3
-          .forceRadial(
-            forceProperties.radial.radius,
-            forceProperties.radial.x,
-            forceProperties.radial.y
-          )
-          .strength(forceProperties.radial.strength)
-      );
-
-    const link = g
+    linkRef.current = g
       .selectAll("line")
       .data(data.edges)
       .enter()
       .append("line")
       .style("stroke", "#ccc")
-      .style("stroke-width", edgeWidth)
+      .style("stroke-width", edge_width)
       .style("opacity", 0.6);
 
-    const linkLabels = g
+    linkLabelsRef.current = g
       .selectAll(".link-label")
       .data(data.edges)
       .enter()
@@ -202,9 +93,9 @@ const GraphVisualization = ({ data }) => {
       .style("fill", "#fff")
       .style("font-size", "12px")
       .style("background-color", "#fff")
-      .text((d) => (edgeLabelVisibility ? d.label : ""));
+      .text((d) => (edge_label_visibility ? d.label : ""));
 
-    const node = g
+    nodeRef.current = g
       .selectAll("g")
       .data(data.nodes)
       .enter()
@@ -215,7 +106,7 @@ const GraphVisualization = ({ data }) => {
         d3
           .drag()
           .on("start", (event, d) => {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
+            if (!event.active) simulationRef.current.alphaTarget(0.3).restart();
             d.fx = d.x;
             d.fy = d.y;
           })
@@ -224,7 +115,7 @@ const GraphVisualization = ({ data }) => {
             d.fy = event.y;
           })
           .on("end", (event, d) => {
-            if (!event.active) simulation.alphaTarget(0);
+            if (!event.active) simulationRef.current.alphaTarget(0);
             d.fx = null;
             d.fy = null;
           })
@@ -261,7 +152,7 @@ const GraphVisualization = ({ data }) => {
         });
 
         // Update visualization to highlight the clicked node and its siblings
-        node
+        nodeRef.current
           .filter((node) => siblingNodes.includes(node))
           .style("opacity", 1)
           .style("filter", "none")
@@ -272,12 +163,12 @@ const GraphVisualization = ({ data }) => {
           .style("stroke", (node) => (node === clickedNode ? "#ddd" : "#bbb"))
           .style("stroke-width", (node) => (node === clickedNode ? 3.5 : 2));
 
-        node
+        nodeRef.current
           .filter((node) => !siblingNodes.includes(node))
           .style("opacity", 0.7)
           .style("filter", "grayscale(70%)");
 
-        link
+        linkRef.current
           .filter(
             (link) =>
               siblingNodes.includes(link.source) &&
@@ -286,7 +177,7 @@ const GraphVisualization = ({ data }) => {
           .style("opacity", 1)
           .style("filter", "none");
 
-        link
+        linkRef.current
           .filter(
             (link) =>
               !siblingNodes.includes(link.source) ||
@@ -295,7 +186,7 @@ const GraphVisualization = ({ data }) => {
           .style("opacity", 0.05)
           .style("filter", "grayscale(70%)");
 
-        linkLabels
+        linkLabelsRef.current
           .filter(
             (link) =>
               siblingNodes.includes(link.source) &&
@@ -304,7 +195,7 @@ const GraphVisualization = ({ data }) => {
           .style("opacity", 1)
           .style("filter", "none");
 
-        linkLabels
+        linkLabelsRef.current
           .filter(
             (link) =>
               !siblingNodes.includes(link.source) ||
@@ -320,7 +211,7 @@ const GraphVisualization = ({ data }) => {
 
     // Function to reset the styles
     function resetStyles() {
-      node
+      nodeRef.current
         .style("opacity", 1)
         .style("filter", "none")
         .select("circle")
@@ -328,21 +219,21 @@ const GraphVisualization = ({ data }) => {
         .style("stroke", "#bbb")
         .style("stroke-width", 1);
 
-      link.style("opacity", 0.6).style("filter", "none");
-      linkLabels.style("opacity", 1).style("filter", "none");
+      linkRef.current.style("opacity", 0.6).style("filter", "none");
+      linkLabelsRef.current.style("opacity", 1).style("filter", "none");
       setClickedNode = null;
     }
 
     // Append an outer circle to add a border to the node
-    node
+    nodeRef.current
       .append("circle")
-      .attr("r", nodeRadius)
+      .attr("r", node_radius)
       .style("fill", "steelblue")
       .style("stroke", "#bbb")
       .style("stroke-width", 1);
 
     // Append the SVG icon image to each node's g element
-    node
+    nodeRef.current
       .append("image")
       .attr("x", -15)
       .attr("y", -15)
@@ -350,14 +241,14 @@ const GraphVisualization = ({ data }) => {
       .attr("height", 30) // height of the image
       .attr("href", (d) => getIcon(d.device_type));
 
-    // Display the node IP above it if nodeLabelVisibility is true
-    node
+    // Display the node IP above it if node_label_visibility is true
+    nodeRef.current
       .append("text")
       .attr("text-anchor", "middle")
-      .attr("y", -nodeRadius - 8) // Position the text above the node
+      .attr("y", -node_radius - 8) // Position the text above the node
       .style("font-size", "12px")
       .style("fill", "#fff")
-      .text((d) => (nodeLabelVisibility ? d.ip_address : ""));
+      .text((d) => (node_label_visibility ? d.ip_address : ""));
 
     // Create the tooltip element
     const tooltip = d3
@@ -366,7 +257,7 @@ const GraphVisualization = ({ data }) => {
       .attr("class", styles.tooltip)
       .style("opacity", 0);
 
-    node
+    nodeRef.current
       .on("mouseover", (event, d) => {
         tooltip.transition().duration(200).style("opacity", 0.9);
         // Position the tooltip
@@ -408,26 +299,160 @@ const GraphVisualization = ({ data }) => {
       svg.transition().call(zoom.scaleBy, 0.5);
     }
 
-    simulation.on("tick", () => {
-      link
+    // Initialize the simulation with the initial force properties
+    initializeSimulation();
+
+    return () => {
+      // Cleanup function to stop the simulation on unmount
+      if (simulationRef.current) {
+        simulationRef.current.stop();
+      }
+    };
+  }, [data]);
+
+  // Use another useEffect hook to update the simulation whenever force_properties change
+  useEffect(() => {
+    if (!data || !data.nodes || data.nodes.length === 0) return; // Don't proceed if data is not ready
+
+    // If the simulation is running, stop it before updating the forces
+    if (simulationRef.current) {
+      simulationRef.current.stop();
+    }
+
+    // Update the simulation forces with the new force_properties
+    updateForces();
+
+    // Restart the simulation with the updated forces
+    if (simulationRef.current) {
+      simulationRef.current.alpha(1).restart();
+    }
+  }, [data, force_properties]);
+
+  // Function to initialize the simulation with the initial force properties
+  const initializeSimulation = () => {
+    simulationRef.current = d3
+      .forceSimulation(data.nodes)
+      .force(
+        "center",
+        d3
+          .forceCenter()
+          .x(width * force_properties.center.x)
+          .y(height * force_properties.center.y)
+          .strength(force_properties.center.strength)
+      )
+      .force(
+        "charge",
+        d3
+          .forceManyBody()
+          .strength(force_properties.charge.strength)
+          .distanceMin(force_properties.charge.distanceMin)
+          .distanceMax(force_properties.charge.distanceMax)
+          .theta(force_properties.charge.theta)
+      )
+      .force(
+        "collide",
+        d3
+          .forceCollide()
+          .radius(force_properties.collide.radius)
+          .strength(force_properties.collide.strength)
+          .iterations(force_properties.collide.iterations)
+      )
+      .force(
+        "forceX",
+        d3
+          .forceX()
+          .strength(force_properties.forceX.strength)
+          .x(force_properties.forceX.x)
+      )
+      .force(
+        "forceY",
+        d3
+          .forceY()
+          .strength(force_properties.forceY.strength)
+          .y(force_properties.forceY.y)
+      )
+      .force(
+        "link",
+        d3
+          .forceLink(data.edges)
+          .id((d) => d.id)
+          .distance(force_properties.link.distance)
+          .iterations(force_properties.link.iterations)
+          .strength(force_properties.link.strength)
+      )
+      .force(
+        "radial",
+        d3
+          .forceRadial(
+            force_properties.radial.radius,
+            force_properties.radial.x,
+            force_properties.radial.y
+          )
+          .strength(force_properties.radial.strength)
+      );
+
+    simulationRef.current.on("tick", () => {
+      // Access link, linkLabels, and node using refs
+      linkRef.current
         .attr("x1", (d) => d.source.x)
         .attr("y1", (d) => d.source.y)
         .attr("x2", (d) => d.target.x)
         .attr("y2", (d) => d.target.y);
 
       // Position the link labels at the midpoint between the source and target nodes
-      linkLabels
+      linkLabelsRef.current
         .attr("x", (d) => (d.source.x + d.target.x) / 2)
         .attr("y", (d) => (d.source.y + d.target.y) / 2);
 
-      node.attr("transform", (d) => {
+      nodeRef.current.attr("transform", (d) => {
         // Ensure nodes stay within SVG bounds
-        d.x = Math.max(20, Math.min(width - (nodeRadius + 10), d.x));
-        d.y = Math.max(20, Math.min(height - (nodeRadius + 10), d.y));
+        d.x = Math.max(20, Math.min(width - (node_radius + 10), d.x));
+        d.y = Math.max(20, Math.min(height - (node_radius + 10), d.y));
         return `translate(${d.x},${d.y})`;
       });
     });
-  }, [data]);
+  };
+
+  // Function to update the simulation forces with new force_properties
+  const updateForces = () => {
+    if (!simulationRef.current) return;
+
+    // Get each force by name and update the properties
+    simulationRef.current
+      .force("center")
+      .x(width * force_properties.center.x)
+      .y(height * force_properties.center.y)
+      .strength(force_properties.center.strength);
+
+    simulationRef.current
+      .force("charge")
+      .strength(force_properties.charge.strength)
+      .distanceMin(force_properties.charge.distanceMin)
+      .distanceMax(force_properties.charge.distanceMax)
+      .theta(force_properties.charge.theta);
+
+    simulationRef.current
+      .force("collide")
+      .radius(force_properties.collide.radius)
+      .strength(force_properties.collide.strength)
+      .iterations(force_properties.collide.iterations);
+
+    simulationRef.current
+      .force("forceX")
+      .strength(force_properties.forceX.strength)
+      .x(force_properties.forceX.x);
+
+    simulationRef.current
+      .force("forceY")
+      .strength(force_properties.forceY.strength)
+      .y(force_properties.forceY.y);
+
+    simulationRef.current
+      .force("link")
+      .distance(force_properties.link.distance)
+      .iterations(force_properties.link.iterations)
+      .strength(force_properties.link.strength);
+  };
 
   return (
     <div className={styles.graph}>
