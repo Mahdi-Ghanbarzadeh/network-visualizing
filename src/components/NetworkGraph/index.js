@@ -15,6 +15,8 @@ import {
 } from "../../config";
 
 const NetworkGraph = () => {
+  const [defaultForceProperties, setDefaultForceProperties] =
+    useState(force_properties);
   const [forceProperties, setForceProperties] = useState(force_properties);
   console.log("-----forceProperties-----");
   console.log(forceProperties);
@@ -30,6 +32,7 @@ const NetworkGraph = () => {
         edge_label_visibility={edge_label_visibility}
         zoom_scale={zoom_scale}
         force_properties={forceProperties}
+        default_force_properties={defaultForceProperties}
         data={data}
       />
       <Sidebar

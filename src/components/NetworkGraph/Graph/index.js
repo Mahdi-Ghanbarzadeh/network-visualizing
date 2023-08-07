@@ -11,6 +11,7 @@ const GraphVisualization = ({
   edge_label_visibility,
   zoom_scale,
   force_properties,
+  default_force_properties,
   data,
 }) => {
   console.log("force properties in graph");
@@ -312,6 +313,7 @@ const GraphVisualization = ({
 
   // Use another useEffect hook to update the simulation whenever force_properties change
   useEffect(() => {
+    console.log("useEffect with force_properties*****");
     if (!data || !data.nodes || data.nodes.length === 0) return; // Don't proceed if data is not ready
 
     // If the simulation is running, stop it before updating the forces
@@ -332,64 +334,19 @@ const GraphVisualization = ({
   const initializeSimulation = () => {
     simulationRef.current = d3
       .forceSimulation(data.nodes)
-      .force(
-        "center",
-        d3
-          .forceCenter()
-          .x(width * force_properties.center.x)
-          .y(height * force_properties.center.y)
-          .strength(force_properties.center.strength)
-      )
-      .force(
-        "charge",
-        d3
-          .forceManyBody()
-          .strength(force_properties.charge.strength)
-          .distanceMin(force_properties.charge.distanceMin)
-          .distanceMax(force_properties.charge.distanceMax)
-          .theta(force_properties.charge.theta)
-      )
-      .force(
-        "collide",
-        d3
-          .forceCollide()
-          .radius(force_properties.collide.radius)
-          .strength(force_properties.collide.strength)
-          .iterations(force_properties.collide.iterations)
-      )
-      .force(
-        "forceX",
-        d3
-          .forceX()
-          .strength(force_properties.forceX.strength)
-          .x(force_properties.forceX.x)
-      )
-      .force(
-        "forceY",
-        d3
-          .forceY()
-          .strength(force_properties.forceY.strength)
-          .y(force_properties.forceY.y)
-      )
+      .force("center", d3.forceCenter())
+      .force("charge", d3.forceManyBody())
+      .force("collide", d3.forceCollide())
+      .force("forceX", d3.forceX())
+      .force("forceY", d3.forceY())
       .force(
         "link",
         d3
-          .forceLink(data.edges)
+          .forceLink()
+          .links(data.edges)
           .id((d) => d.id)
-          .distance(force_properties.link.distance)
-          .iterations(force_properties.link.iterations)
-          .strength(force_properties.link.strength)
       )
-      .force(
-        "radial",
-        d3
-          .forceRadial(
-            force_properties.radial.radius,
-            force_properties.radial.x,
-            force_properties.radial.y
-          )
-          .strength(force_properties.radial.strength)
-      );
+      .force("radial", d3.forceRadial());
 
     simulationRef.current.on("tick", () => {
       // Access link, linkLabels, and node using refs
@@ -417,41 +374,101 @@ const GraphVisualization = ({
   const updateForces = () => {
     if (!simulationRef.current) return;
 
-    // Get each force by name and update the properties
     simulationRef.current
       .force("center")
       .x(width * force_properties.center.x)
       .y(height * force_properties.center.y)
       .strength(force_properties.center.strength);
 
-    simulationRef.current
-      .force("charge")
-      .strength(force_properties.charge.strength)
-      .distanceMin(force_properties.charge.distanceMin)
-      .distanceMax(force_properties.charge.distanceMax)
-      .theta(force_properties.charge.theta);
+    if (force_properties.charge.enabled) {
+      simulationRef.current
+        .force("charge")
+        .strength(force_properties.charge.strength)
+        .distanceMin(force_properties.charge.distanceMin)
+        .distanceMax(force_properties.charge.distanceMax)
+        .theta(force_properties.charge.theta);
+    } else {
+      simulationRef.current
+        .force("charge")
+        .strength(default_force_properties.charge.strength)
+        .distanceMin(default_force_properties.charge.distanceMin)
+        .distanceMax(default_force_properties.charge.distanceMax)
+        .theta(default_force_properties.charge.theta);
+    }
 
-    simulationRef.current
-      .force("collide")
-      .radius(force_properties.collide.radius)
-      .strength(force_properties.collide.strength)
-      .iterations(force_properties.collide.iterations);
+    if (force_properties.collide.enabled) {
+      simulationRef.current
+        .force("collide")
+        .radius(force_properties.collide.radius)
+        .strength(force_properties.collide.strength)
+        .iterations(force_properties.collide.iterations);
+    } else {
+      simulationRef.current
+        .force("collide")
+        .radius(default_force_properties.collide.radius)
+        .strength(default_force_properties.collide.strength)
+        .iterations(default_force_properties.collide.iterations);
+    }
 
-    simulationRef.current
-      .force("forceX")
-      .strength(force_properties.forceX.strength)
-      .x(force_properties.forceX.x);
+    if (force_properties.forceX.enabled) {
+      simulationRef.current
+        .force("forceX")
+        .strength(force_properties.forceX.strength)
+        .x(force_properties.forceX.x);
+    } else {
+      simulationRef.current
+        .force("forceX")
+        .strength(default_force_properties.forceX.strength)
+        .x(default_force_properties.forceX.x);
+    }
 
-    simulationRef.current
-      .force("forceY")
-      .strength(force_properties.forceY.strength)
-      .y(force_properties.forceY.y);
+    if (force_properties.forceY.enabled) {
+      simulationRef.current
+        .force("forceY")
+        .strength(force_properties.forceY.strength)
+        .y(force_properties.forceY.y);
+    } else {
+      simulationRef.current
+        .force("forceY")
+        .strength(default_force_properties.forceY.strength)
+        .y(default_force_properties.forceY.y);
+    }
 
-    simulationRef.current
-      .force("link")
-      .distance(force_properties.link.distance)
-      .iterations(force_properties.link.iterations)
-      .strength(force_properties.link.strength);
+    if (force_properties.link.enabled) {
+      simulationRef.current
+        .force("link")
+        .distance(force_properties.link.distance)
+        .iterations(force_properties.link.iterations)
+        .strength(force_properties.link.strength);
+    } else {
+      simulationRef.current
+        .force("link")
+        .distance(default_force_properties.link.distance)
+        .iterations(default_force_properties.link.iterations)
+        .strength(default_force_properties.link.strength);
+    }
+
+    if (force_properties.link.enabled) {
+      simulationRef.current.force(
+        "radial",
+        d3
+          .forceRadial()
+          .radius(force_properties.radial.radius)
+          .x(force_properties.radial.x)
+          .y(force_properties.radial.y)
+          .strength(force_properties.radial.strength)
+      );
+    } else {
+      simulationRef.current.force(
+        "radial",
+        d3
+          .forceRadial()
+          .radius(default_force_properties.radial.radius)
+          .x(default_force_properties.radial.x)
+          .y(default_force_properties.radial.y)
+          .strength(default_force_properties.radial.strength)
+      );
+    }
   };
 
   return (

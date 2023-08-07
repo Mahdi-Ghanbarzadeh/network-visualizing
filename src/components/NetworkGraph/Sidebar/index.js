@@ -69,7 +69,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
 
                 <div className={styles.column}>
                   <span>
-                    X-Center{" "}
+                    X-coordinate{" "}
                     <Tooltip title="A value between 0 and 1, indicating the x-coordinate of the center point. 0 represents the left edge of the container, and 1 represents the right edge."></Tooltip>
                   </span>
                   <Slider
@@ -84,7 +84,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
 
                 <div className={styles.column}>
                   <span>
-                    Y-Center{" "}
+                    Y-coordinate{" "}
                     <Tooltip title="A value between 0 and 1, indicating the y-coordinate of the center point. 0 represents the top edge of the container, and 1 represents the bottom edge."></Tooltip>
                   </span>
                   <Slider
@@ -98,7 +98,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 <div className={styles.row}>
                   <span>
                     Strength{" "}
-                    <Tooltip title="A value between 0.1 and 2, representing the strength of the centering force. Higher values will result in stronger attraction towards the center. A reduced strength softens the movements on interactive graphs in which new nodes enter or exit the graph."></Tooltip>
+                    <Tooltip title="A value between 0.1 and 1, representing the strength of the centering force. Higher values will result in stronger attraction towards the center. A reduced strength softens the movements on interactive graphs in which new nodes enter or exit the graph."></Tooltip>
                   </span>
                   <InputNumber
                     min={0.1}
@@ -135,11 +135,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 <div className={styles.row}>
                   <span>
                     Strength{" "}
-                    <Tooltip title="A value between 0 and 1, indicating the x-coordinate of the center point. 0 represents the left edge of the container, and 1 represents the right edge."></Tooltip>
+                    <Tooltip title="A value between -1000 and 1000, representing the strength of the charge force. A positive value causes nodes to attract each other, while a negative value causes nodes to repel each other."></Tooltip>
                   </span>
                   <InputNumber
                     min={-1000}
-                    max={-100}
+                    max={1000}
                     step={50}
                     value={forceProperties.charge.strength}
                     onChange={(value) =>
@@ -150,7 +150,10 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.row}>
-                  <span>Distance Min:</span>
+                  <span>
+                    Distance Min{" "}
+                    <Tooltip title="The value, ranging from 1 to 50, represents the minimum distance at which nodes start repelling each other and establishes an upper bound on the force strength between nearby nodes, preventing instability and random force direction when nodes are coincident."></Tooltip>
+                  </span>
                   <InputNumber
                     min={1}
                     max={50}
@@ -164,11 +167,14 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.row}>
-                  <span>Distance Max:</span>
+                  <span>
+                    Distance Max{" "}
+                    <Tooltip title="The value, ranging from 0 to 2000, represents the maximum distance at which nodes start repelling each other and establishes an upper bound on the force strength between nearby nodes, preventing instability and random force direction when nodes are coincident."></Tooltip>
+                  </span>
                   <InputNumber
-                    min={1}
+                    min={0}
                     max={2000}
-                    step={1}
+                    step={100}
                     value={forceProperties.charge.distanceMax}
                     onChange={(value) =>
                       handleChange("charge", "distanceMax", value)
@@ -178,11 +184,14 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>theta:</span>
+                  <span>
+                    theta{" "}
+                    <Tooltip title="A value between -10 and 10, controlling the Barnes-Hut approximation accuracy. Higher values improve performance but may reduce accuracy."></Tooltip>
+                  </span>
                   <Slider
-                    min={-1}
-                    max={1}
-                    step={0.01}
+                    min={-10}
+                    max={10}
+                    step={1}
                     value={forceProperties.charge.theta}
                     onChange={(value) => handleChange("charge", "theta", value)}
                     disabled={!forceProperties.charge.enabled}
@@ -210,10 +219,13 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Radius:</span>
+                  <span>
+                    Radius{" "}
+                    <Tooltip title="A value between 0 and 100, representing the minimum distance nodes must be apart to avoid overlapping."></Tooltip>
+                  </span>
                   <Slider
-                    min={10}
-                    max={40}
+                    min={0}
+                    max={100}
                     step={1}
                     value={forceProperties.collide.radius}
                     onChange={(value) =>
@@ -224,10 +236,13 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Strength:</span>
+                  <span>
+                    Strength{" "}
+                    <Tooltip title="A value between 0 and 1, controlling the strength of the collision force. Higher values result in stronger collision avoidance."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
-                    max={2}
+                    max={1}
                     step={0.1}
                     value={forceProperties.collide.strength}
                     onChange={(value) =>
@@ -238,7 +253,10 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Iterations:</span>
+                  <span>
+                    Iterations{" "}
+                    <Tooltip title="A value between 0 and 10, Increasing the number of iterations greatly increases the rigidity of the constraint and avoids partial overlap of nodes, but also increases the runtime cost to evaluate the force."></Tooltip>
+                  </span>
                   <Slider
                     min={1}
                     max={10}
@@ -273,11 +291,14 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Strength:</span>
+                  <span>
+                    Strength{" "}
+                    <Tooltip title="A value between 0 and 1, determines how much to increment the node’s x-velocity. For example, a value of 0.1 indicates that the node should move a tenth of the way from its current x-position to the target x-position with each application. Higher values moves nodes more quickly to the target position."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
                     max={1}
-                    step={0.01}
+                    step={0.1}
                     value={forceProperties.forceX.strength}
                     onChange={(value) =>
                       handleChange("forceX", "strength", value)
@@ -287,7 +308,10 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>X:</span>
+                  <span>
+                    X-coordinate{" "}
+                    <Tooltip title="A value between 0 and 1, determines how much the force will push the nodes in the X direction."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
                     max={1}
@@ -320,11 +344,14 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Strength:</span>
+                  <span>
+                    Strength{" "}
+                    <Tooltip title="A value between 0 and 1, determines how much to increment the node’s y-velocity. For example, a value of 0.1 indicates that the node should move a tenth of the way from its current y-position to the target y-position with each application. Higher values moves nodes more quickly to the target position."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
                     max={1}
-                    step={0.01}
+                    step={0.1}
                     value={forceProperties.forceY.strength}
                     onChange={(value) =>
                       handleChange("forceY", "strength", value)
@@ -334,7 +361,10 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Y:</span>
+                  <span>
+                    Y-coordinate{" "}
+                    <Tooltip title="A value between 0 and 1, determines how much the force will push the nodes in the Y direction."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
                     max={1}
@@ -364,10 +394,13 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Distance:</span>
+                  <span>
+                    Distance{" "}
+                    <Tooltip title="A value between 0 and 500, determines the length to which the force will push/pull nodes to create links."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
-                    max={100}
+                    max={500}
                     step={1}
                     value={forceProperties.link.distance}
                     onChange={(value) =>
@@ -378,7 +411,10 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Iterations:</span>
+                  <span>
+                    Iterations{" "}
+                    <Tooltip title="A value between 1 and 10, used for iterations, significantly enhances constraint rigidity, making it particularly suitable for intricate structures like lattices. However, this enhancement comes at the cost of intensifying the computational load due to increased force evaluation runtime. Caution is advised when considering higher values."></Tooltip>
+                  </span>
                   <Slider
                     min={1}
                     max={10}
@@ -392,7 +428,10 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Strength:</span>
+                  <span>
+                    Strength{" "}
+                    <Tooltip title="A value between 0 and 2, determines how much the links influence the layout of the nodes. Higher values result in stronger forces that pull the linked nodes together, while lower values reduce the effect of the force."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
                     max={2}
@@ -410,7 +449,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
 
               <div className={styles.panel}>
                 <span>
-                  <b>Radial: </b> write explanation!!!!
+                  <b>Radial: </b> drawing all nodes towards a center point
                 </span>
 
                 <div className={styles.row}>
@@ -426,10 +465,13 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Strength:</span>
+                  <span>
+                    Strength{" "}
+                    <Tooltip title="A value between 0 and 1, determines the increment in a node's x- and y-velocity, effectively determining how rapidly the node approaches its target point."></Tooltip>
+                  </span>
                   <Slider
                     min={0}
-                    max={2}
+                    max={1}
                     step={0.01}
                     value={forceProperties.radial.strength}
                     onChange={(value) =>
@@ -440,7 +482,10 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 </div>
 
                 <div className={styles.column}>
-                  <span>Radius:</span>
+                  <span>
+                    Radius{" "}
+                    <Tooltip title="A value between 0 and 100, establishes the circle's radius for the given node. By setting this attribute, the force recalculates the radius for each node based on the specified number or function, facilitating the movement towards or away from the circle's edge. "></Tooltip>
+                  </span>
                   <Slider
                     min={0}
                     max={100}
