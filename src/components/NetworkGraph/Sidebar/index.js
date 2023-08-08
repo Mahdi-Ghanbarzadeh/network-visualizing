@@ -484,11 +484,11 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 <div className={styles.column}>
                   <span>
                     Radius{" "}
-                    <Tooltip title="A value between 0 and 100, establishes the circle's radius for the given node. By setting this attribute, the force recalculates the radius for each node based on the specified number or function, facilitating the movement towards or away from the circle's edge. "></Tooltip>
+                    <Tooltip title="A value between 0 and 500, establishes the circle's radius for the given node. By setting this attribute, the force recalculates the radius for each node based on the specified number or function, facilitating the movement towards or away from the circle's edge. "></Tooltip>
                   </span>
                   <Slider
                     min={0}
-                    max={100}
+                    max={500}
                     step={1}
                     value={forceProperties.radial.radius}
                     onChange={(value) =>

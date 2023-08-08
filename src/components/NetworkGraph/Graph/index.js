@@ -388,12 +388,19 @@ const GraphVisualization = ({
         .distanceMax(force_properties.charge.distanceMax)
         .theta(force_properties.charge.theta);
     } else {
-      simulationRef.current
-        .force("charge")
-        .strength(default_force_properties.charge.strength)
-        .distanceMin(default_force_properties.charge.distanceMin)
-        .distanceMax(default_force_properties.charge.distanceMax)
-        .theta(default_force_properties.charge.theta);
+      simulationRef.current.force("charge", null); // Remove the charge force
+      simulationRef.current.force(
+        "charge",
+        d3.forceManyBody().strength(default_force_properties.charge.strength)
+      );
+
+      // return to the all default state
+      // simulationRef.current
+      //   .force("charge")
+      //   .strength(default_force_properties.charge.strength)
+      //   .distanceMin(default_force_properties.charge.distanceMin)
+      //   .distanceMax(default_force_properties.charge.distanceMax)
+      //   .theta(default_force_properties.charge.theta);
     }
 
     if (force_properties.collide.enabled) {
@@ -403,11 +410,8 @@ const GraphVisualization = ({
         .strength(force_properties.collide.strength)
         .iterations(force_properties.collide.iterations);
     } else {
-      simulationRef.current
-        .force("collide")
-        .radius(default_force_properties.collide.radius)
-        .strength(default_force_properties.collide.strength)
-        .iterations(default_force_properties.collide.iterations);
+      simulationRef.current.force("collide", null); // Remove the collide force
+      simulationRef.current.force("collide", d3.forceCollide());
     }
 
     if (force_properties.forceX.enabled) {
@@ -416,10 +420,8 @@ const GraphVisualization = ({
         .strength(force_properties.forceX.strength)
         .x(force_properties.forceX.x);
     } else {
-      simulationRef.current
-        .force("forceX")
-        .strength(default_force_properties.forceX.strength)
-        .x(default_force_properties.forceX.x);
+      simulationRef.current.force("forceX", null); // Remove the forceX force
+      simulationRef.current.force("forceX", d3.forceX());
     }
 
     if (force_properties.forceY.enabled) {
@@ -428,10 +430,8 @@ const GraphVisualization = ({
         .strength(force_properties.forceY.strength)
         .y(force_properties.forceY.y);
     } else {
-      simulationRef.current
-        .force("forceY")
-        .strength(default_force_properties.forceY.strength)
-        .y(default_force_properties.forceY.y);
+      simulationRef.current.force("forceY", null); // Remove the forceY force
+      simulationRef.current.force("forceY", d3.forceY());
     }
 
     if (force_properties.link.enabled) {
@@ -441,14 +441,17 @@ const GraphVisualization = ({
         .iterations(force_properties.link.iterations)
         .strength(force_properties.link.strength);
     } else {
-      simulationRef.current
-        .force("link")
-        .distance(default_force_properties.link.distance)
-        .iterations(default_force_properties.link.iterations)
-        .strength(default_force_properties.link.strength);
+      simulationRef.current.force("link", null); // Remove the link force
+      simulationRef.current.force(
+        "link",
+        d3
+          .forceLink()
+          .links(data.edges)
+          .id((d) => d.id)
+      );
     }
 
-    if (force_properties.link.enabled) {
+    if (force_properties.radial.enabled) {
       simulationRef.current.force(
         "radial",
         d3
@@ -459,15 +462,17 @@ const GraphVisualization = ({
           .strength(force_properties.radial.strength)
       );
     } else {
-      simulationRef.current.force(
-        "radial",
-        d3
-          .forceRadial()
-          .radius(default_force_properties.radial.radius)
-          .x(default_force_properties.radial.x)
-          .y(default_force_properties.radial.y)
-          .strength(default_force_properties.radial.strength)
-      );
+      simulationRef.current.force("radial", null); // Remove the radial force without adding it again
+
+      // simulationRef.current.force(
+      //   "radial",
+      //   d3
+      //     .forceRadial()
+      //     .radius(default_force_properties.radial.radius)
+      //     .x(default_force_properties.radial.x)
+      //     .y(default_force_properties.radial.y)
+      //     .strength(default_force_properties.radial.strength)
+      // );
     }
   };
 

@@ -25,7 +25,7 @@ export const force_properties = {
   },
   charge: {
     enabled: true,
-    strength: -300, // min: -1000, max: 1000
+    strength: -500, // min: -1000, max: 1000
     distanceMin: 1, // min: 0, max: 50
     distanceMax: 2000, // min: 0, max: 2000
     theta: 0, // min: -1, max: 1
@@ -53,7 +53,7 @@ export const force_properties = {
     strength: 1, // set
   },
   radial: {
-    enabled: true,
+    enabled: false,
     strength: 0, // min: 0, max: 1
     radius: 30, // min: 0, max: 100
     x: width / 2, // had set
