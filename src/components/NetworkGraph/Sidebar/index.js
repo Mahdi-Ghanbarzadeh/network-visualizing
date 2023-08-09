@@ -13,7 +13,14 @@ import styles from "./Sidebar.module.css";
 import { style } from "d3";
 const { Panel } = Collapse;
 
-const Sidebar = ({ forceProperties, setForceProperties }) => {
+const Sidebar = ({
+  forceProperties,
+  setForceProperties,
+  node_label_visibility,
+  setNodeLabelVisibility,
+  edge_label_visibility,
+  setEdgeLabelVisibility,
+}) => {
   const handleChange = (section, key, value) => {
     setForceProperties((prevProperties) => ({
       ...prevProperties,
@@ -51,7 +58,8 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
       >
         <Collapse
           size="large"
-          defaultActiveKey={["representation", "filter", "style"]}
+          defaultActiveKey={["filter", "style"]}
+          // defaultActiveKey={["representation", "filter", "style"]}
           style={{
             minHeight: "688.8px",
             maxHeight: "688.8px",
@@ -98,7 +106,7 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
                 <div className={styles.row}>
                   <span>
                     Strength{" "}
-                    <Tooltip title="A value between 0.1 and 1, representing the strength of the centering force. Higher values will result in stronger attraction towards the center. A reduced strength softens the movements on interactive graphs in which new nodes enter or exit the graph."></Tooltip>
+                    <Tooltip title="A value between 0.1 and 1, representing the strength of the centering force. Higher values will result in stronger attraction towards the center. A reduced strength softens the movements on interactive graphs in which new nodes enter or exit the graph. This can result in preventing “jumpy” moves when nodes enter"></Tooltip>
                   </span>
                   <InputNumber
                     min={0.1}
@@ -501,13 +509,53 @@ const Sidebar = ({ forceProperties, setForceProperties }) => {
             </div>
           </Panel>
           <Panel header="Network Filter" key="filter">
-            {/* Add input fields for charge forceProperties */}
+            <div className={styles.section}>
+              <div className={styles.panel}>
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    onChange={(value) => setNodeLabelVisibility(value)}
+                    checked={node_label_visibility}
+                  />
+                  <span>Show Node Labels</span>
+                </div>
+
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    onChange={(value) => setEdgeLabelVisibility(value)}
+                    checked={edge_label_visibility}
+                  />
+                  <span>Show Edge Labels</span>
+                </div>
+
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    // onChange={(value) => setEdgeLabelVisibility(value)}
+                    // checked={edge_label_visibility}
+                  />
+                  <span>Show Traffic Flow</span>
+                </div>
+
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    // onChange={(value) => setEdgeLabelVisibility(value)}
+                    // checked={edge_label_visibility}
+                  />
+                  <span>Show Vulnerability</span>
+                </div>
+              </div>
+            </div>
           </Panel>
           <Panel header="Network Style" key="style">
-            {/* Add input fields for collide forceProperties */}
+            {/* Add input fields */}
           </Panel>
-
-          {/* <button onClick={handleFormSubmit}>Apply</button> */}
         </Collapse>
       </ConfigProvider>
     </div>

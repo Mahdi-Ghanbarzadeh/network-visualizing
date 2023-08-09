@@ -16,6 +16,12 @@ const GraphVisualization = ({
 }) => {
   console.log("force properties in graph");
   console.log(force_properties);
+  console.log("node_label_visibility");
+  console.log(node_label_visibility);
+  console.log("edge_label_visibility");
+  console.log(edge_label_visibility);
+
+  // Create a ref to store the graph
   const graphRef = useRef();
 
   // variable to keep track of clicked nodes in order to reset styles
@@ -245,6 +251,7 @@ const GraphVisualization = ({
     // Display the node IP above it if node_label_visibility is true
     nodeRef.current
       .append("text")
+      .attr("class", "node-label")
       .attr("text-anchor", "middle")
       .attr("y", -node_radius - 8) // Position the text above the node
       .style("font-size", "12px")
@@ -311,7 +318,7 @@ const GraphVisualization = ({
     };
   }, [data]);
 
-  // Use another useEffect hook to update the simulation whenever force_properties change
+  // Use useEffect hook to update the simulation whenever force_properties changes
   useEffect(() => {
     console.log("useEffect with force_properties*****");
     if (!data || !data.nodes || data.nodes.length === 0) return; // Don't proceed if data is not ready
@@ -329,6 +336,15 @@ const GraphVisualization = ({
       simulationRef.current.alpha(1).restart();
     }
   }, [data, force_properties]);
+
+  // Use useEffect hook to update the edge and node labels visibility
+  useEffect(() => {
+    linkLabelsRef.current.text((d) => (edge_label_visibility ? d.label : ""));
+
+    nodeRef.current
+      .select(".node-label")
+      .text((d) => (node_label_visibility ? d.ip_address : ""));
+  }, [node_label_visibility, edge_label_visibility]);
 
   // Function to initialize the simulation with the initial force properties
   const initializeSimulation = () => {
