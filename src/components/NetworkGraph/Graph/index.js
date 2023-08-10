@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import styles from "./Graph.module.css";
+import Menu from "./Menu";
 
 const GraphVisualization = ({
   width,
@@ -13,16 +14,12 @@ const GraphVisualization = ({
   force_properties,
   default_force_properties,
   data,
+  fullScreenHandle,
 }) => {
-  console.log("force properties in graph");
-  console.log(force_properties);
-  console.log("node_label_visibility");
-  console.log(node_label_visibility);
-  console.log("edge_label_visibility");
-  console.log(edge_label_visibility);
-
   // Create a ref to store the graph
   const graphRef = useRef();
+
+  const containerGraphRef = useRef();
 
   // variable to keep track of clicked nodes in order to reset styles
   let setClickedNode = null;
@@ -32,6 +29,9 @@ const GraphVisualization = ({
   const linkRef = useRef();
   const linkLabelsRef = useRef();
   const nodeRef = useRef();
+
+  const zoomRef = useRef();
+  const svgRef = useRef();
 
   const getIcon = (device_type) => {
     switch (device_type) {
@@ -62,22 +62,22 @@ const GraphVisualization = ({
 
   useEffect(() => {
     // D3 code to create the graph visualization
-    const zoom = d3
+    zoomRef.current = d3
       .zoom()
       .scaleExtent([zoom_scale[0], zoom_scale[1]])
       .on("zoom", zoomed);
 
-    const svg = d3
+    svgRef.current = d3
       .select(graphRef.current)
       .attr("width", width)
       .attr("height", height)
-      .call(zoom);
+      .call(zoomRef.current);
 
-    const g = svg.select("g");
+    const g = svgRef.current.select("g");
     if (g.empty()) {
       // Create the 'g' element only if it doesn't exist yet
       // if it doesn't check, the graph will be shown twice
-      svg.append("g");
+      svgRef.current.append("g");
     }
 
     linkRef.current = g
@@ -285,28 +285,6 @@ const GraphVisualization = ({
       g.attr("transform", transform);
     }
 
-    // the function tested, but the button doesn't exist.
-    function zoomReset() {
-      svg
-        .transition()
-        .duration(750)
-        .call(
-          zoom.transform,
-          d3.zoomIdentity,
-          d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
-        );
-    }
-
-    // the function tested, but the button doesn't exist.
-    function zoomIn() {
-      svg.transition().call(zoom.scaleBy, 2);
-    }
-
-    // the function tested, but the button doesn't exist.
-    function zoomOut() {
-      svg.transition().call(zoom.scaleBy, 0.5);
-    }
-
     // Initialize the simulation with the initial force properties
     initializeSimulation();
 
@@ -317,6 +295,33 @@ const GraphVisualization = ({
       }
     };
   }, [data]);
+
+  // the function tested, but the button doesn't exist.
+  function zoomReset() {
+    svgRef.current
+      .transition()
+      .duration(750)
+      .call(
+        zoomRef.current.transform,
+        d3.zoomIdentity,
+        d3
+          .zoomTransform(svgRef.current.node())
+          .invert([
+            containerGraphRef.current.clientWidth / 2,
+            containerGraphRef.current.clientHeight / 2,
+          ])
+      );
+  }
+
+  // the function tested, but the button doesn't exist.
+  function zoomIn() {
+    svgRef.current.transition().call(zoomRef.current.scaleBy, 2);
+  }
+
+  // the function tested, but the button doesn't exist.
+  function zoomOut() {
+    svgRef.current.transition().call(zoomRef.current.scaleBy, 0.5);
+  }
 
   // Use useEffect hook to update the simulation whenever force_properties changes
   useEffect(() => {
@@ -379,8 +384,20 @@ const GraphVisualization = ({
 
       nodeRef.current.attr("transform", (d) => {
         // Ensure nodes stay within SVG bounds
-        d.x = Math.max(20, Math.min(width - (node_radius + 10), d.x));
-        d.y = Math.max(20, Math.min(height - (node_radius + 10), d.y));
+        d.x = Math.max(
+          20,
+          Math.min(
+            containerGraphRef.current.clientWidth - (node_radius + 10),
+            d.x
+          )
+        );
+        d.y = Math.max(
+          20,
+          Math.min(
+            containerGraphRef.current.clientHeight - (node_radius + 10),
+            d.y
+          )
+        );
         return `translate(${d.x},${d.y})`;
       });
     });
@@ -390,10 +407,11 @@ const GraphVisualization = ({
   const updateForces = () => {
     if (!simulationRef.current) return;
 
+    // containerGraphRef.current.clientWidth = width , containerGraphRef.current.clientHeight = height
     simulationRef.current
       .force("center")
-      .x(width * force_properties.center.x)
-      .y(height * force_properties.center.y)
+      .x(containerGraphRef.current.clientWidth * force_properties.center.x)
+      .y(containerGraphRef.current.clientHeight * force_properties.center.y)
       .strength(force_properties.center.strength);
 
     if (force_properties.charge.enabled) {
@@ -494,9 +512,17 @@ const GraphVisualization = ({
 
   return (
     <div className={styles.graph}>
-      <svg ref={graphRef} width={width} height={height}>
-        {/* Create a container for the graph elements */}
-      </svg>
+      <Menu
+        zoomInHandler={zoomIn}
+        zoomResetHandler={zoomReset}
+        zoomOutHandler={zoomOut}
+        fullScreenHandle={fullScreenHandle}
+      ></Menu>
+      <div ref={containerGraphRef}>
+        <svg ref={graphRef}>
+          {/* Create a container for the graph elements */}
+        </svg>
+      </div>
     </div>
   );
 };

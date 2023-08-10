@@ -19,3 +19,8 @@ body {
 .ant-collapse {
   border-bottom: 2px solid rgb(191, 191, 191);
 }
+
+.ant-float-btn-group {
+  /* inset-block-end: auto; */
+  inset-block-end: auto;
+}

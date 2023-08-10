@@ -14,7 +14,7 @@ import {
   force_properties,
 } from "../../config";
 
-const NetworkGraph = () => {
+const NetworkGraph = ({ fullScreenHandle }) => {
   const [defaultForceProperties, setDefaultForceProperties] =
     useState(force_properties);
   const [forceProperties, setForceProperties] = useState(force_properties);
@@ -24,7 +24,7 @@ const NetworkGraph = () => {
   );
 
   const [edgeLabelVisibility, setEdgeLabelVisibility] = useState(
-    node_label_visibility
+    edge_label_visibility
   );
 
   return (
@@ -40,6 +40,7 @@ const NetworkGraph = () => {
         force_properties={forceProperties}
         default_force_properties={defaultForceProperties}
         data={data}
+        fullScreenHandle={fullScreenHandle}
       />
       <Sidebar
         forceProperties={forceProperties}

@@ -61,8 +61,8 @@ const Sidebar = ({
           defaultActiveKey={["filter", "style"]}
           // defaultActiveKey={["representation", "filter", "style"]}
           style={{
-            minHeight: "688.8px",
-            maxHeight: "688.8px",
+            minHeight: "calc(100vh - 5rem)",
+            maxHeight: "calc(100vh - 5rem)",
             overflowY: "auto",
           }}
           // className={styles.collapse}
