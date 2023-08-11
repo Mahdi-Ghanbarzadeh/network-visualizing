@@ -3,6 +3,9 @@ import * as d3 from "d3";
 import styles from "./Graph.module.css";
 import Menu from "./Menu";
 
+import domtoimage from "dom-to-image";
+import { saveAs } from "file-saver";
+
 const GraphVisualization = ({
   width,
   height,
@@ -247,6 +250,23 @@ const GraphVisualization = ({
       .attr("width", 30) //  width of the image
       .attr("height", 30) // height of the image
       .attr("href", (d) => getIcon(d.device_type));
+
+    // Append a foreignObject for each node to embed the React component
+    // nodeRef.current
+    //   .append("foreignObject")
+    //   .attr("width", 30) // Adjust the size
+    //   .attr("height", 30) // Adjust the size
+    //   .attr("x", -15) // Adjust the positioning
+    //   .attr("y", -15) // Adjust the positioning
+    //   .html((d) => {
+    //     switch (d.device_type) {
+    //       case "computer":
+    //         return <ComputerIcon />; // Embed the React component
+    //       // Add cases for other icons
+    //       default:
+    //         return ""; // Return empty string if no matching icon
+    //     }
+    //   });
 
     // Display the node IP above it if node_label_visibility is true
     nodeRef.current
@@ -510,6 +530,37 @@ const GraphVisualization = ({
     }
   };
 
+  // Function to trigger SVG download
+  const downloadGraphImage = () => {
+    const svgElement = graphRef.current;
+
+    // Convert SVG to data URL
+    domtoimage
+      .toPng(svgElement)
+      .then(function (dataUrl) {
+        // Create a Blob from the data URL
+        const blob = dataURLtoBlob(dataUrl);
+
+        // Save the Blob as a file using FileSaver.js
+        saveAs(blob, "graph.png");
+      })
+      .catch(function (error) {
+        console.error("Error generating image:", error);
+      });
+  };
+
+  const dataURLtoBlob = (dataURL) => {
+    const arr = dataURL.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+  };
+
   return (
     <div className={styles.graph}>
       <Menu
@@ -517,6 +568,7 @@ const GraphVisualization = ({
         zoomResetHandler={zoomReset}
         zoomOutHandler={zoomOut}
         fullScreenHandle={fullScreenHandle}
+        downloadGraphImage={downloadGraphImage}
       ></Menu>
       <div ref={containerGraphRef}>
         <svg ref={graphRef}>
