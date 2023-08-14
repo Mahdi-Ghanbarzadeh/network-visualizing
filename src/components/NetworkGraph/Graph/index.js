@@ -13,6 +13,7 @@ const GraphVisualization = ({
   node_radius,
   node_label_visibility,
   edge_label_visibility,
+  traffic_flow_visibility,
   zoom_scale,
   force_properties,
   default_force_properties,
@@ -83,15 +84,105 @@ const GraphVisualization = ({
       svgRef.current.append("g");
     }
 
-    linkRef.current = g
-      .selectAll("line")
-      .data(data.edges)
-      .enter()
-      .append("line")
-      .style("stroke", "#ccc")
-      .style("stroke-width", edge_width)
-      .style("opacity", 0.6);
+    // linkRef.current = g
+    //   .selectAll("line")
+    //   .data(data.edges)
+    //   .enter()
+    //   .append("line")
+    //   .style("stroke", "#ccc")
+    //   .style("stroke-width", edge_width)
+    //   .style("opacity", 0.6);
 
+    // const colours = [
+    //   "#FDA860",
+    //   "#FC8669",
+    //   "#E36172",
+    //   "#C64277",
+    //   "#E36172",
+    //   "#FC8669",
+    //   "#FDA860",
+    // ];
+
+    //Four different colors
+    // var colours = ["#FDA860", "#FC8669", "#E36172", "#C64277"];
+
+    const colours = ["#006400", "#32CD32", "#228B22", "#2E8B57"];
+    // const colours = ["#006400"];
+
+    // Define the linear gradient for the flow animation
+    const linearGradient = svgRef.current
+      .append("defs")
+      .append("linearGradient")
+      .attr("id", "animate-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%")
+      .attr("y2", "100%")
+      .attr("spreadMethod", "pad");
+
+    // Add color stops to the gradient
+    linearGradient
+      .selectAll(".stop")
+      .data(colours)
+      .enter()
+      .append("stop")
+      .attr("offset", (d, i) => i / (colours.length - 1))
+      .attr("stop-color", (d) => d);
+
+    // Add animation to the gradient
+    linearGradient
+      .append("animate")
+      .attr("attributeName", "y1")
+      .attr("values", "0%;100%")
+      .attr("dur", "7s")
+      .attr("repeatCount", "indefinite");
+
+    linearGradient
+      .append("animate")
+      .attr("attributeName", "y2")
+      .attr("values", "100%;200%")
+      .attr("dur", "7s")
+      .attr("repeatCount", "indefinite");
+
+    // Enter/update pattern for the links
+    linkRef.current = g
+      .selectAll(".link")
+      .data(data.edges)
+      .join("line")
+      .attr("class", "link")
+      .style("stroke-width", (d) =>
+        d.flow > 0 && traffic_flow_visibility ? 10 : 2
+      )
+      .style("stroke", (d) =>
+        d.flow > 0 && traffic_flow_visibility
+          ? "url(#animate-gradient)"
+          : "#ccc"
+      )
+      .style("opacity", (d) =>
+        d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
+      );
+
+    // If you want to animate the edges, you can transition the positions
+    linkRef.current
+      .transition()
+      .duration(1000) // Adjust the duration as needed
+      .attr("x1", (d) => d.source.x)
+      .attr("y1", (d) => d.source.y)
+      .attr("x2", (d) => d.target.x)
+      .attr("y2", (d) => d.target.y)
+      .on("end", () => {
+        // Restart the animation when the transition ends
+        linearGradient.selectAll("animate").each(function () {
+          this.beginElement();
+        });
+      });
+
+    // Start the initial animation
+    linearGradient.selectAll("animate").each(function () {
+      this.beginElement();
+    });
+
+    // label for edges between nodes
     linkLabelsRef.current = g
       .selectAll(".link-label")
       .data(data.edges)

@@ -10,6 +10,7 @@ import {
   node_radius,
   node_label_visibility,
   edge_label_visibility,
+  traffic_flow_visibility,
   zoom_scale,
   force_properties,
 } from "../../config";
@@ -27,6 +28,10 @@ const NetworkGraph = ({ fullScreenHandle }) => {
     edge_label_visibility
   );
 
+  const [trafficFlowVisibility, setTrafficFlowVisibility] = useState(
+    traffic_flow_visibility
+  );
+
   return (
     <div className={styles.layout}>
       <Graph
@@ -36,6 +41,7 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         node_radius={node_radius}
         node_label_visibility={nodeLabelVisibility}
         edge_label_visibility={edgeLabelVisibility}
+        traffic_flow_visibility={trafficFlowVisibility}
         zoom_scale={zoom_scale}
         force_properties={forceProperties}
         default_force_properties={defaultForceProperties}
@@ -49,6 +55,8 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         setNodeLabelVisibility={setNodeLabelVisibility}
         edge_label_visibility={edgeLabelVisibility}
         setEdgeLabelVisibility={setEdgeLabelVisibility}
+        traffic_flow_visibility={trafficFlowVisibility}
+        setTrafficFlowVisibility={setTrafficFlowVisibility}
       />
     </div>
   );

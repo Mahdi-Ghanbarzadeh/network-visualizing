@@ -17,6 +17,7 @@ export const node_radius = 25;
 // set the visibility of nodes and edges
 export const node_label_visibility = true;
 export const edge_label_visibility = true;
+export const traffic_flow_visibility = true;
 
 // set the min and max amount of zoom
 export const zoom_scale = [1, 5];
