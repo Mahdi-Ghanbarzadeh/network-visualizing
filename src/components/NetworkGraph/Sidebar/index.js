@@ -20,6 +20,10 @@ const Sidebar = ({
   setNodeLabelVisibility,
   edge_label_visibility,
   setEdgeLabelVisibility,
+  traffic_flow_visibility,
+  setTrafficFlowVisibility,
+  vulnerability_visibility,
+  setVulnerabilityVisibility,
 }) => {
   const handleChange = (section, key, value) => {
     setForceProperties((prevProperties) => ({
@@ -535,8 +539,8 @@ const Sidebar = ({
                   <Switch
                     checkedChildren="On"
                     unCheckedChildren="Off"
-                    // onChange={(value) => setEdgeLabelVisibility(value)}
-                    // checked={edge_label_visibility}
+                    onChange={(value) => setTrafficFlowVisibility(value)}
+                    checked={traffic_flow_visibility}
                   />
                   <span>Show Traffic Flow</span>
                 </div>
@@ -545,8 +549,8 @@ const Sidebar = ({
                   <Switch
                     checkedChildren="On"
                     unCheckedChildren="Off"
-                    // onChange={(value) => setEdgeLabelVisibility(value)}
-                    // checked={edge_label_visibility}
+                    onChange={(value) => setVulnerabilityVisibility(value)}
+                    checked={vulnerability_visibility}
                   />
                   <span>Show Vulnerability</span>
                 </div>

@@ -14,12 +14,17 @@ const GraphVisualization = ({
   node_label_visibility,
   edge_label_visibility,
   traffic_flow_visibility,
+  vulnerability_visibility,
   zoom_scale,
   force_properties,
   default_force_properties,
   data,
   fullScreenHandle,
 }) => {
+  const [highlightedNodes, setHighlightedNodes] = useState(
+    new Set(["modem1", "switch1", "server2"])
+  );
+
   // Create a ref to store the graph
   const graphRef = useRef();
 
@@ -106,8 +111,16 @@ const GraphVisualization = ({
     //Four different colors
     // var colours = ["#FDA860", "#FC8669", "#E36172", "#C64277"];
 
-    const colours = ["#006400", "#32CD32", "#228B22", "#2E8B57"];
-    // const colours = ["#006400"];
+    const colours = [
+      "#32CD32",
+      "#006400",
+      "#32CD32",
+      "#006400",
+      "#32CD32",
+      "#006400",
+      "#32CD32",
+      "#006400",
+    ];
 
     // Define the linear gradient for the flow animation
     const linearGradient = svgRef.current
@@ -134,14 +147,14 @@ const GraphVisualization = ({
       .append("animate")
       .attr("attributeName", "y1")
       .attr("values", "0%;100%")
-      .attr("dur", "7s")
+      .attr("dur", "6s") // Increase the duration for smoother flow
       .attr("repeatCount", "indefinite");
 
     linearGradient
       .append("animate")
       .attr("attributeName", "y2")
       .attr("values", "100%;200%")
-      .attr("dur", "7s")
+      .attr("dur", "6s") // Increase the duration for smoother flow
       .attr("repeatCount", "indefinite");
 
     // Enter/update pattern for the links
@@ -165,7 +178,7 @@ const GraphVisualization = ({
     // If you want to animate the edges, you can transition the positions
     linkRef.current
       .transition()
-      .duration(1000) // Adjust the duration as needed
+      .duration(2000) // Adjust the duration as needed
       .attr("x1", (d) => d.source.x)
       .attr("y1", (d) => d.source.y)
       .attr("x2", (d) => d.target.x)
@@ -320,7 +333,14 @@ const GraphVisualization = ({
         .style("stroke", "#bbb")
         .style("stroke-width", 1);
 
-      linkRef.current.style("opacity", 0.6).style("filter", "none");
+      // linkRef.current.style("opacity", 0.6).style("filter", "none");
+
+      linkRef.current
+        .style("opacity", (d) =>
+          d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
+        )
+        .style("filter", "none");
+
       linkLabelsRef.current.style("opacity", 1).style("filter", "none");
       setClickedNode = null;
     }
@@ -331,7 +351,12 @@ const GraphVisualization = ({
       .attr("r", node_radius)
       .style("fill", "steelblue")
       .style("stroke", "#bbb")
-      .style("stroke-width", 1);
+      .style("stroke-width", 1)
+      .attr("class", (d) =>
+        vulnerability_visibility && highlightedNodes.has(d.id)
+          ? styles.winker_animation
+          : ""
+      );
 
     // Append the SVG icon image to each node's g element
     nodeRef.current
@@ -461,6 +486,39 @@ const GraphVisualization = ({
       .select(".node-label")
       .text((d) => (node_label_visibility ? d.ip_address : ""));
   }, [node_label_visibility, edge_label_visibility]);
+
+  // Use useEffect hook to update the show traffic flow
+  useEffect(() => {
+    // Enter/update pattern for the links
+    linkRef.current = svgRef.current
+      .select("g")
+      .selectAll(".link")
+      .data(data.edges)
+      .join("line")
+      .attr("class", "link")
+      .style("stroke-width", (d) =>
+        d.flow > 0 && traffic_flow_visibility ? 10 : 2
+      )
+      .style("stroke", (d) =>
+        d.flow > 0 && traffic_flow_visibility
+          ? "url(#animate-gradient)"
+          : "#ccc"
+      )
+      .style("opacity", (d) =>
+        d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
+      );
+  }, [traffic_flow_visibility]);
+
+  // Use useEffect hook to update the show vulnerability points
+  useEffect(() => {
+    nodeRef.current
+      .selectAll("circle")
+      .attr("class", (d) =>
+        vulnerability_visibility && highlightedNodes.has(d.id)
+          ? styles.winker_animation
+          : ""
+      );
+  }, [vulnerability_visibility]);
 
   // Function to initialize the simulation with the initial force properties
   const initializeSimulation = () => {

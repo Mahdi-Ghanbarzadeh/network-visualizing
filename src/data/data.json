@@ -221,7 +221,7 @@
       "source": "server1",
       "target": "switch1",
       "label": "Ethernet",
-      "flow": 80
+      "flow": 0
     },
     {
       "source": "switch1",
@@ -283,12 +283,7 @@
       "label": "Ethernet",
       "flow": 100
     },
-    {
-      "source": "computer2",
-      "target": "laptop2",
-      "label": "Ethernet",
-      "flow": 100
-    },
+
     {
       "source": "firewall1",
       "target": "laptop2",
@@ -305,7 +300,7 @@
       "source": "computer2",
       "target": "laptop2",
       "label": "DSL",
-      "flow": 50
+      "flow": 0
     },
     {
       "source": "phone2",
@@ -341,7 +336,7 @@
       "source": "switch2",
       "target": "modem2",
       "label": "DSL",
-      "flow": 100
+      "flow": 0
     },
     {
       "source": "modem2",

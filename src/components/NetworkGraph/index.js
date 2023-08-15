@@ -11,6 +11,7 @@ import {
   node_label_visibility,
   edge_label_visibility,
   traffic_flow_visibility,
+  vulnerability_visibility,
   zoom_scale,
   force_properties,
 } from "../../config";
@@ -32,6 +33,10 @@ const NetworkGraph = ({ fullScreenHandle }) => {
     traffic_flow_visibility
   );
 
+  const [vulnerabilityVisibility, setVulnerabilityVisibility] = useState(
+    vulnerability_visibility
+  );
+
   return (
     <div className={styles.layout}>
       <Graph
@@ -42,6 +47,7 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         node_label_visibility={nodeLabelVisibility}
         edge_label_visibility={edgeLabelVisibility}
         traffic_flow_visibility={trafficFlowVisibility}
+        vulnerability_visibility={vulnerabilityVisibility}
         zoom_scale={zoom_scale}
         force_properties={forceProperties}
         default_force_properties={defaultForceProperties}
@@ -57,6 +63,8 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         setEdgeLabelVisibility={setEdgeLabelVisibility}
         traffic_flow_visibility={trafficFlowVisibility}
         setTrafficFlowVisibility={setTrafficFlowVisibility}
+        vulnerability_visibility={vulnerabilityVisibility}
+        setVulnerabilityVisibility={setVulnerabilityVisibility}
       />
     </div>
   );

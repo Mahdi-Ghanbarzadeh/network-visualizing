@@ -17,3 +17,40 @@
   line-height: 1.4;
   z-index: 9999;
 }
+
+.winker_animation {
+  stroke: #eb2943 !important;
+  animation: winker_animation_frame 1s infinite linear;
+}
+
+@keyframes winker_animation_frame {
+  50% {
+    stroke-width: 2;
+  }
+  50% {
+    stroke-width: 5;
+  }
+}
+
+.lineError {
+  fill: none;
+  stroke-width: 3;
+  z-index: 5;
+  stroke-dasharray: 10;
+  stroke-dashoffset: -110;
+  stroke-linecap: round;
+  animation-direction: reverse;
+  animation: stroke 6s infinite linear;
+  stroke: #eb2943;
+}
+
+.lineWarning {
+  fill: none;
+  stroke-width: 3;
+  stroke-dasharray: 100;
+  stroke-dashoffset: -500;
+  stroke-linecap: round;
+  animation-direction: reverse !important;
+  animation: stroke 10s infinite linear;
+  stroke: #49d8a1;
+}
