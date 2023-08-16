@@ -1,4 +1,4 @@
-// *only can use in NetworkGraph component*
+// *** only can use in NetworkGraph component ***
 
 // set the dimensions and margins of the graph
 export const margin = { top: 10, right: 0, bottom: 10, left: 10 };
@@ -67,3 +67,16 @@ export const force_properties = {
     y: height / 2, // had set
   },
 };
+
+export const device_types = [
+  { device_type: "computer", icon: "icons/computer.svg" },
+  { device_type: "laptop", icon: "icons/laptop.svg" },
+  { device_type: "phone", icon: "icons/phone.svg" },
+  { device_type: "printer", icon: "icons/printer.svg" },
+  { device_type: "server", icon: "icons/server.svg" },
+  { device_type: "switch", icon: "icons/switch.svg" },
+  { device_type: "modem", icon: "icons/modem.svg" },
+  { device_type: "router", icon: "icons/router.svg" },
+  { device_type: "firewall", icon: "icons/firewall.svg" },
+  { device_type: "internet", icon: "icons/internet.svg" },
+];

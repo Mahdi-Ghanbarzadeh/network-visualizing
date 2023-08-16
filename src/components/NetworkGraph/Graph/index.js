@@ -18,9 +18,11 @@ const GraphVisualization = ({
   zoom_scale,
   force_properties,
   default_force_properties,
-  data,
+  dataset,
+  device_types,
   fullScreenHandle,
 }) => {
+  const [data, setData] = useState(dataset);
   const [highlightedNodes, setHighlightedNodes] = useState(
     new Set(["modem1", "switch1", "server2"])
   );
@@ -42,31 +44,14 @@ const GraphVisualization = ({
   const zoomRef = useRef();
   const svgRef = useRef();
 
+  // Convert the device_types array to an object
+  const deviceTypeIcons = {};
+  device_types.forEach((item) => {
+    deviceTypeIcons[item.device_type] = item.icon;
+  });
+
   const getIcon = (device_type) => {
-    switch (device_type) {
-      case "computer":
-        return "icons/computer.svg";
-      case "laptop":
-        return "icons/laptop.svg";
-      case "phone":
-        return "icons/phone.svg";
-      case "printer":
-        return "icons/printer.svg";
-      case "server":
-        return "icons/server.svg";
-      case "switch":
-        return "icons/switch.svg";
-      case "modem":
-        return "icons/modem.svg";
-      case "router":
-        return "icons/router.svg";
-      case "firewall":
-        return "icons/firewall.svg";
-      case "internet":
-        return "icons/internet.svg";
-      default:
-        return "icons/coding.svg";
-    }
+    return deviceTypeIcons[device_type] || "icons/coding.svg";
   };
 
   useEffect(() => {
@@ -83,33 +68,73 @@ const GraphVisualization = ({
       .call(zoomRef.current);
 
     const g = svgRef.current.select("g");
+
     if (g.empty()) {
       // Create the 'g' element only if it doesn't exist yet
       // if it doesn't check, the graph will be shown twice
       svgRef.current.append("g");
     }
 
-    // linkRef.current = g
-    //   .selectAll("line")
-    //   .data(data.edges)
-    //   .enter()
-    //   .append("line")
-    //   .style("stroke", "#ccc")
-    //   .style("stroke-width", edge_width)
-    //   .style("opacity", 0.6);
+    // Add a "g" element to the SVG for the drag-and-drop area
+    svgRef.current
+      .on("drop", dropHandler)
+      .on("dragenter", dragEnterHandler)
+      .on("dragover", dragOverHandler);
+    // .on("dragleave", dragLeaveHandler);
 
-    // const colours = [
-    //   "#FDA860",
-    //   "#FC8669",
-    //   "#E36172",
-    //   "#C64277",
-    //   "#E36172",
-    //   "#FC8669",
-    //   "#FDA860",
-    // ];
+    function dragOverHandler(event) {
+      event.preventDefault(); // Add this line to prevent the default behavior
+      console.log("dragover");
+    }
 
-    //Four different colors
-    // var colours = ["#FDA860", "#FC8669", "#E36172", "#C64277"];
+    function dropHandler(event) {
+      event.preventDefault();
+      console.log("drop");
+      // Rest of your drop event handler logic
+
+      // Parse the dropped node from the dataTransfer
+      const newNode = JSON.parse(
+        event.dataTransfer.getData("application/x-d3-node")
+      );
+
+      console.log(newNode);
+
+      // Update your graph's data with the new node
+      // const newData = {
+      //   ...data,
+      //   nodes: [...data.nodes, newNode],
+      // };
+
+      setData((prevData) => ({
+        ...prevData,
+        nodes: [...prevData.nodes, newNode],
+      }));
+
+      console.log("setData");
+      console.log(data);
+
+      // Stop the current simulation
+      simulationRef.current.stop();
+
+      // Update the simulation with the new data
+      // simulationRef.current.nodes(data.nodes);
+
+      // Reinitialize the simulation with the updated data
+      initializeSimulation();
+
+      // // Restart the simulation
+      // simulationRef.current.alpha(1).restart();
+    }
+
+    function dragEnterHandler(event) {
+      event.preventDefault();
+      console.log("dragenter");
+    }
+
+    function dragLeaveHandler(event) {
+      event.preventDefault();
+      console.log("dragleave");
+    }
 
     const colours = [
       "#32CD32",
@@ -157,6 +182,10 @@ const GraphVisualization = ({
       .attr("dur", "6s") // Increase the duration for smoother flow
       .attr("repeatCount", "indefinite");
 
+    // to simulate and update visualization
+    if (linkRef.current) {
+      linkRef.current.remove();
+    }
     // Enter/update pattern for the links
     linkRef.current = g
       .selectAll(".link")
@@ -195,6 +224,11 @@ const GraphVisualization = ({
       this.beginElement();
     });
 
+    // to simulate and update visualization
+    if (linkLabelsRef.current) {
+      linkLabelsRef.current.remove();
+    }
+
     // label for edges between nodes
     linkLabelsRef.current = g
       .selectAll(".link-label")
@@ -208,6 +242,11 @@ const GraphVisualization = ({
       .style("font-size", "12px")
       .style("background-color", "#fff")
       .text((d) => (edge_label_visibility ? d.label : ""));
+
+    // to simulate and update visualization
+    if (nodeRef.current) {
+      nodeRef.current.remove();
+    }
 
     nodeRef.current = g
       .selectAll("g")
@@ -461,7 +500,6 @@ const GraphVisualization = ({
 
   // Use useEffect hook to update the simulation whenever force_properties changes
   useEffect(() => {
-    console.log("useEffect with force_properties*****");
     if (!data || !data.nodes || data.nodes.length === 0) return; // Don't proceed if data is not ready
 
     // If the simulation is running, stop it before updating the forces

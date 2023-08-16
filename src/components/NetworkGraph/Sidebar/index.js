@@ -14,6 +14,7 @@ import { style } from "d3";
 const { Panel } = Collapse;
 
 const Sidebar = ({
+  device_types,
   forceProperties,
   setForceProperties,
   node_label_visibility,
@@ -25,6 +26,19 @@ const Sidebar = ({
   vulnerability_visibility,
   setVulnerabilityVisibility,
 }) => {
+  // const device_types = [
+  //   { device_type: "computer", icon: "icons/computer.svg" },
+  //   { device_type: "laptop", icon: "icons/laptop.svg" },
+  //   { device_type: "phone", icon: "icons/phone.svg" },
+  //   { device_type: "printer", icon: "icons/printer.svg" },
+  //   { device_type: "server", icon: "icons/server.svg" },
+  //   { device_type: "switch", icon: "icons/switch.svg" },
+  //   { device_type: "modem", icon: "icons/modem.svg" },
+  //   { device_type: "router", icon: "icons/router.svg" },
+  //   { device_type: "firewall", icon: "icons/firewall.svg" },
+  //   { device_type: "internet", icon: "icons/internet.svg" },
+  // ];
+
   const handleChange = (section, key, value) => {
     setForceProperties((prevProperties) => ({
       ...prevProperties,
@@ -35,8 +49,31 @@ const Sidebar = ({
     }));
   };
 
-  // console.log("--forceProperties--");
-  // console.log(forceProperties);
+  const handleDragStart = (event, node) => {
+    console.log("handleDragStart");
+    event.dataTransfer.setData("application/x-d3-node", JSON.stringify(node));
+  };
+
+  // random ID
+  function guidGenerator() {
+    var S4 = function () {
+      return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    };
+    return (
+      S4() +
+      S4() +
+      "-" +
+      S4() +
+      "-" +
+      S4() +
+      "-" +
+      S4() +
+      "-" +
+      S4() +
+      S4() +
+      S4()
+    );
+  }
 
   return (
     <div className={styles.sidebar}>
@@ -62,7 +99,7 @@ const Sidebar = ({
       >
         <Collapse
           size="large"
-          defaultActiveKey={["filter", "style"]}
+          defaultActiveKey={["simulation"]}
           // defaultActiveKey={["representation", "filter", "style"]}
           style={{
             minHeight: "calc(100vh - 5rem)",
@@ -71,6 +108,85 @@ const Sidebar = ({
           }}
           // className={styles.collapse}
         >
+          <Panel header="Network Simulation" key="simulation">
+            <div className={styles.simulation}>
+              <span>
+                <b> Design Your Network: </b> Simply drag and drop the nodes
+                below onto the canvas to construct and simulate your network
+                topology.
+              </span>
+
+              <div className={styles.node_container}>
+                {device_types.map((iconInfo) => (
+                  <div
+                    key={iconInfo.device_type}
+                    className={styles.icon_container}
+                    draggable
+                    onDragStart={(event) =>
+                      handleDragStart(event, {
+                        id: guidGenerator() /* other properties */,
+                        device_type: iconInfo.device_type,
+                      })
+                    }
+                  >
+                    <img
+                      className={styles.icon}
+                      draggable="false"
+                      src={iconInfo.icon}
+                      alt={`SVG Example for ${iconInfo.device_type}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Panel>
+
+          <Panel header="Network Filter" key="filter">
+            <div className={styles.section}>
+              <div className={styles.panel}>
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    onChange={(value) => setNodeLabelVisibility(value)}
+                    checked={node_label_visibility}
+                  />
+                  <span>Show Node Labels</span>
+                </div>
+
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    onChange={(value) => setEdgeLabelVisibility(value)}
+                    checked={edge_label_visibility}
+                  />
+                  <span>Show Edge Labels</span>
+                </div>
+
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    onChange={(value) => setTrafficFlowVisibility(value)}
+                    checked={traffic_flow_visibility}
+                  />
+                  <span>Show Traffic Flow</span>
+                </div>
+
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    onChange={(value) => setVulnerabilityVisibility(value)}
+                    checked={vulnerability_visibility}
+                  />
+                  <span>Show Vulnerability</span>
+                </div>
+              </div>
+            </div>
+          </Panel>
+
           <Panel header="Network Representation" key="representation">
             <div className={styles.section}>
               <div className={styles.panel}>
@@ -512,51 +628,7 @@ const Sidebar = ({
               </div>
             </div>
           </Panel>
-          <Panel header="Network Filter" key="filter">
-            <div className={styles.section}>
-              <div className={styles.panel}>
-                <div className={styles.row}>
-                  <Switch
-                    checkedChildren="On"
-                    unCheckedChildren="Off"
-                    onChange={(value) => setNodeLabelVisibility(value)}
-                    checked={node_label_visibility}
-                  />
-                  <span>Show Node Labels</span>
-                </div>
 
-                <div className={styles.row}>
-                  <Switch
-                    checkedChildren="On"
-                    unCheckedChildren="Off"
-                    onChange={(value) => setEdgeLabelVisibility(value)}
-                    checked={edge_label_visibility}
-                  />
-                  <span>Show Edge Labels</span>
-                </div>
-
-                <div className={styles.row}>
-                  <Switch
-                    checkedChildren="On"
-                    unCheckedChildren="Off"
-                    onChange={(value) => setTrafficFlowVisibility(value)}
-                    checked={traffic_flow_visibility}
-                  />
-                  <span>Show Traffic Flow</span>
-                </div>
-
-                <div className={styles.row}>
-                  <Switch
-                    checkedChildren="On"
-                    unCheckedChildren="Off"
-                    onChange={(value) => setVulnerabilityVisibility(value)}
-                    checked={vulnerability_visibility}
-                  />
-                  <span>Show Vulnerability</span>
-                </div>
-              </div>
-            </div>
-          </Panel>
           <Panel header="Network Style" key="style">
             {/* Add input fields */}
           </Panel>

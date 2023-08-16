@@ -36,3 +36,33 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+
+.simulation {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.node_container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.icon_container {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 3px solid rgb(187, 187, 187);
+  border-radius: 100%;
+  cursor: grab;
+  background-color: steelblue;
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+}

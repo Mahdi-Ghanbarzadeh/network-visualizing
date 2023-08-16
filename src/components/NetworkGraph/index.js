@@ -14,6 +14,7 @@ import {
   vulnerability_visibility,
   zoom_scale,
   force_properties,
+  device_types,
 } from "../../config";
 
 const NetworkGraph = ({ fullScreenHandle }) => {
@@ -51,10 +52,12 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         zoom_scale={zoom_scale}
         force_properties={forceProperties}
         default_force_properties={defaultForceProperties}
-        data={data}
+        dataset={data}
+        device_types={device_types}
         fullScreenHandle={fullScreenHandle}
       />
       <Sidebar
+        device_types={device_types}
         forceProperties={forceProperties}
         setForceProperties={setForceProperties}
         node_label_visibility={nodeLabelVisibility}
