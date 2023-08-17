@@ -11,6 +11,7 @@ const GraphVisualization = ({
   height,
   edge_width,
   node_radius,
+  zoom_panning_availability,
   node_label_visibility,
   edge_label_visibility,
   traffic_flow_visibility,
@@ -61,11 +62,14 @@ const GraphVisualization = ({
       .scaleExtent([zoom_scale[0], zoom_scale[1]])
       .on("zoom", zoomed);
 
+    function zoomed({ transform }) {
+      g.attr("transform", transform);
+    }
+
     svgRef.current = d3
       .select(graphRef.current)
       .attr("width", width)
-      .attr("height", height)
-      .call(zoomRef.current);
+      .attr("height", height);
 
     const g = svgRef.current.select("g");
 
@@ -241,7 +245,10 @@ const GraphVisualization = ({
       .style("fill", "#fff")
       .style("font-size", "12px")
       .style("background-color", "#fff")
-      .text((d) => (edge_label_visibility ? d.label : ""));
+      .text((d) => (edge_label_visibility ? d.label : ""))
+      .attr("draggable", "false")
+      .style("pointer-events", "none")
+      .style("user-select", "none"); // Prevent text selection
 
     // to simulate and update visualization
     if (nodeRef.current) {
@@ -255,24 +262,6 @@ const GraphVisualization = ({
       .append("g")
       .attr("transform", (d) => `translate(${d.x},${d.y})`)
       .style("cursor", "pointer")
-      .call(
-        d3
-          .drag()
-          .on("start", (event, d) => {
-            if (!event.active) simulationRef.current.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-          })
-          .on("drag", (event, d) => {
-            d.fx = event.x;
-            d.fy = event.y;
-          })
-          .on("end", (event, d) => {
-            if (!event.active) simulationRef.current.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-          })
-      )
       .on("click", nodeHandleClick);
 
     // Click event handler
@@ -404,7 +393,9 @@ const GraphVisualization = ({
       .attr("y", -15)
       .attr("width", 30) //  width of the image
       .attr("height", 30) // height of the image
-      .attr("href", (d) => getIcon(d.device_type));
+      .attr("draggable", "false")
+      .attr("href", (d) => getIcon(d.device_type))
+      .style("pointer-events", "none");
 
     // Append a foreignObject for each node to embed the React component
     // nodeRef.current
@@ -431,7 +422,10 @@ const GraphVisualization = ({
       .attr("y", -node_radius - 8) // Position the text above the node
       .style("font-size", "12px")
       .style("fill", "#fff")
-      .text((d) => (node_label_visibility ? d.ip_address : ""));
+      .text((d) => (node_label_visibility ? d.ip_address : ""))
+      .attr("draggable", "false")
+      .style("pointer-events", "none")
+      .style("user-select", "none"); // Prevent text selection
 
     // Create the tooltip element
     const tooltip = d3
@@ -455,10 +449,6 @@ const GraphVisualization = ({
         // Hide the tooltip when mouse leaves the node
         tooltip.transition().duration(500).style("opacity", 0);
       });
-
-    function zoomed({ transform }) {
-      g.attr("transform", transform);
-    }
 
     // Initialize the simulation with the initial force properties
     initializeSimulation();
@@ -497,6 +487,40 @@ const GraphVisualization = ({
   function zoomOut() {
     svgRef.current.transition().call(zoomRef.current.scaleBy, 0.5);
   }
+
+  // Use useEffect hook to update the zoom and panning availability
+  useEffect(() => {
+    // Update the zoom and pan behavior based on zoom_panning_availability
+    if (zoom_panning_availability) {
+      svgRef.current.call(zoomRef.current);
+    } else {
+      svgRef.current.on(".zoom", null);
+    }
+
+    // Update the drag behavior based on zoom_panning_availability
+    if (zoom_panning_availability) {
+      const drag = d3
+        .drag()
+        .on("start", (event, d) => {
+          if (!event.active) simulationRef.current.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        })
+        .on("drag", (event, d) => {
+          d.fx = event.x;
+          d.fy = event.y;
+        })
+        .on("end", (event, d) => {
+          if (!event.active) simulationRef.current.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        });
+
+      nodeRef.current.call(drag);
+    } else {
+      nodeRef.current.on(".drag", null);
+    }
+  }, [data, zoom_panning_availability]);
 
   // Use useEffect hook to update the simulation whenever force_properties changes
   useEffect(() => {

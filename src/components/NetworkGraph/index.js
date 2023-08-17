@@ -8,6 +8,7 @@ import {
   height,
   edge_width,
   node_radius,
+  zoom_panning_availability,
   node_label_visibility,
   edge_label_visibility,
   traffic_flow_visibility,
@@ -38,6 +39,8 @@ const NetworkGraph = ({ fullScreenHandle }) => {
     vulnerability_visibility
   );
 
+  const [zoomPanning, setZoomPanning] = useState(zoom_panning_availability);
+
   return (
     <div className={styles.layout}>
       <Graph
@@ -45,6 +48,7 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         height={height}
         edge_width={edge_width}
         node_radius={node_radius}
+        zoom_panning_availability={zoomPanning}
         node_label_visibility={nodeLabelVisibility}
         edge_label_visibility={edgeLabelVisibility}
         traffic_flow_visibility={trafficFlowVisibility}
@@ -68,6 +72,8 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         setTrafficFlowVisibility={setTrafficFlowVisibility}
         vulnerability_visibility={vulnerabilityVisibility}
         setVulnerabilityVisibility={setVulnerabilityVisibility}
+        zoom_panning_availability={zoomPanning}
+        setZoomPanning={setZoomPanning}
       />
     </div>
   );

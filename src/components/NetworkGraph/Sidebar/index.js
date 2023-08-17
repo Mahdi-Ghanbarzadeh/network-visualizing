@@ -25,6 +25,8 @@ const Sidebar = ({
   setTrafficFlowVisibility,
   vulnerability_visibility,
   setVulnerabilityVisibility,
+  zoom_panning_availability,
+  setZoomPanning,
 }) => {
   // const device_types = [
   //   { device_type: "computer", icon: "icons/computer.svg" },
@@ -137,6 +139,18 @@ const Sidebar = ({
                     />
                   </div>
                 ))}
+              </div>
+              <div>
+                {" "}
+                <div className={styles.row}>
+                  <Switch
+                    checkedChildren="On"
+                    unCheckedChildren="Off"
+                    onChange={(value) => setZoomPanning(value)}
+                    checked={zoom_panning_availability}
+                  />
+                  <span>Draw Edge</span>
+                </div>
               </div>
             </div>
           </Panel>

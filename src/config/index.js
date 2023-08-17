@@ -14,6 +14,9 @@ export const height = "calc(100vh - 6.5rem)";
 export const edge_width = 2;
 export const node_radius = 25;
 
+// when it is false, only the zoom in, zoom out and reset zoom buttons works.
+export const zoom_panning_availability = true;
+
 // set the visibility of nodes and edges
 export const node_label_visibility = true;
 export const edge_label_visibility = true;
