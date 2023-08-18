@@ -14,7 +14,8 @@ export const height = "calc(100vh - 6.5rem)";
 export const edge_width = 2;
 export const node_radius = 25;
 
-// when it is false, only the zoom in, zoom out and reset zoom buttons works.
+// when it is false, only the zoom in, zoom out and reset zoom buttons works. also the edge drawing feature is available
+// when it is true, the zoom and pan features available
 export const zoom_panning_availability = true;
 
 // set the visibility of nodes and edges

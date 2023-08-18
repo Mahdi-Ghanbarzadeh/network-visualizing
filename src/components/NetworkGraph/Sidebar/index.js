@@ -146,8 +146,11 @@ const Sidebar = ({
                   <Switch
                     checkedChildren="On"
                     unCheckedChildren="Off"
-                    onChange={(value) => setZoomPanning(value)}
-                    checked={zoom_panning_availability}
+                    onChange={(value) => {
+                      console.log(value);
+                      setZoomPanning(!value);
+                    }}
+                    checked={!zoom_panning_availability}
                   />
                   <span>Draw Edge</span>
                 </div>

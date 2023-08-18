@@ -28,6 +28,21 @@ const GraphVisualization = ({
     new Set(["modem1", "switch1", "server2"])
   );
 
+  console.log("--- zoom_panning_availability ---");
+  console.log(zoom_panning_availability);
+
+  console.log("--- data ---");
+  console.log(data);
+
+  // draw edge
+  const [isDrawingEdge, setIsDrawingEdge] = useState(false);
+  const [drawingStartNode, setDrawingStartNode] = useState(null);
+  const [drawingEndNode, setDrawingEndNode] = useState(null);
+  const [dragLineCoords, setDragLineCoords] = useState(null);
+  const [showDragLine, setShowDragLine] = useState(false);
+
+  console.log(isDrawingEdge);
+
   // Create a ref to store the graph
   const graphRef = useRef();
 
@@ -428,15 +443,18 @@ const GraphVisualization = ({
       .style("user-select", "none"); // Prevent text selection
 
     // Create the tooltip element
-    const tooltip = d3
-      .select("body")
-      .append("div")
-      .attr("class", styles.tooltip)
-      .style("opacity", 0);
-
     nodeRef.current
       .on("mouseover", (event, d) => {
-        tooltip.transition().duration(200).style("opacity", 0.9);
+        // Remove the existing tooltip if it exists
+        d3.select("." + styles.tooltip).remove();
+
+        // Create a new tooltip element
+        const tooltip = d3
+          .select("body")
+          .append("div")
+          .attr("class", styles.tooltip)
+          .style("opacity", 0.9);
+
         // Position the tooltip
         tooltip
           .html(
@@ -444,10 +462,20 @@ const GraphVisualization = ({
           )
           .style("left", event.pageX + 10 + "px")
           .style("top", event.pageY - 28 + "px");
+
+        // Hide the tooltip when mouse leaves the node
+        tooltip.transition().duration(200).style("opacity", 0.9);
       })
       .on("mouseout", () => {
         // Hide the tooltip when mouse leaves the node
-        tooltip.transition().duration(500).style("opacity", 0);
+        d3.select("." + styles.tooltip)
+          .transition()
+          .duration(500)
+          .style("opacity", 0)
+          .on("end", () => {
+            // Remove the tooltip element from the body
+            d3.select("." + styles.tooltip).remove();
+          });
       });
 
     // Initialize the simulation with the initial force properties
@@ -460,6 +488,183 @@ const GraphVisualization = ({
       }
     };
   }, [data]);
+
+  // Instead of directly using the handleMouseMove and handleMouseUp functions as event handlers, define them inside a useEffect callback function to capture the current value of isDrawingEdge. This will ensure that the event handlers always use the correct value of isDrawingEdge
+  useEffect(() => {
+    console.log("before zoom pan useEffect");
+
+    console.log("after zoom pan useEffect");
+
+    // Separate g element for the drag line
+    const dragLineContainer = svgRef.current.append("g");
+    const dragLine = dragLineContainer
+      .append("line")
+      .attr("class", "link dragline")
+      .style("stroke", "blue")
+      .style("stroke-width", "2px")
+      .style("pointer-events", "none"); // prevent interfere with mouse events
+
+    // Event handlers for edge drawing
+    function handleMouseDown(event, d) {
+      if (!isDrawingEdge) {
+        const clickedNode = getClickedNode(event);
+
+        console.log(clickedNode);
+
+        if (clickedNode) {
+          // Check if the clicked position is the same as node radius
+          if (distanceToNode(event, clickedNode) <= node_radius) {
+            setIsDrawingEdge(true);
+            setDrawingStartNode(clickedNode);
+            setDrawingEndNode(null);
+
+            setShowDragLine(true); // Show the drag line when starting to draw
+          }
+        }
+
+        console.log(isDrawingEdge);
+      }
+    }
+
+    function handleMouseMove(event) {
+      if (isDrawingEdge && drawingStartNode) {
+        const [x, y] = d3.pointer(event);
+
+        // Calculate the starting point coordinates at the node's border
+        const angle = Math.atan2(
+          y - drawingStartNode.y,
+          x - drawingStartNode.x
+        );
+        const startX = drawingStartNode.x + node_radius * Math.cos(angle);
+        const startY = drawingStartNode.y + node_radius * Math.sin(angle);
+
+        // Check if the mouse is over a node
+        // const overNode = simulationRef.current.find(x, y);
+
+        const overNode = getClickedNode(event);
+
+        console.log(overNode);
+
+        // Check if the mouse is over the drawing start node
+        const overEndNode = distanceToNode(event, overNode) <= node_radius;
+
+        console.log("-- overEndNode --");
+        console.log(overEndNode);
+
+        // Check if the mouse is over the drawing start node
+        const overStartNode =
+          distanceToNode(event, drawingStartNode) <= node_radius;
+
+        console.log(overStartNode);
+
+        // If the mouse is not over the drawing start node, update the drag line coordinates
+        if (!overStartNode) {
+          dragLine
+            .attr("x1", startX)
+            .attr("y1", startY)
+            .attr("x2", x)
+            .attr("y2", y);
+
+          console.log("befooooooooooore");
+          console.log(drawingEndNode);
+          console.log(overEndNode);
+          // If the node is the drawing end node, increase its radius
+          if (overEndNode) {
+            console.log("drawingEndNode === overEndNode");
+
+            nodeRef.current
+              .filter((node) => node === overNode)
+              .select("circle")
+              .attr("r", node_radius + 3)
+              .style("stroke-width", "2px"); // Increase stroke width
+          } else {
+            nodeRef.current
+              .select("circle")
+              .attr("r", node_radius)
+              .style("stroke-width", "1px"); // Reset stroke width
+          }
+
+          // // Reset the start node's border size
+          // if (overStartNode) {
+          //   d3.select(drawingStartNode).select("circle").attr("r", node_radius);
+          // }
+        } else {
+          // Hide the drag line if the mouse is over the drawing start node
+          dragLine.attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 0);
+        }
+      }
+    }
+
+    function handleMouseUp(event) {
+      if (isDrawingEdge) {
+        const clickedNode = getClickedNode(event);
+
+        console.log(clickedNode);
+
+        if (
+          clickedNode &&
+          drawingStartNode &&
+          clickedNode !== drawingStartNode
+        ) {
+          if (distanceToNode(event, clickedNode) <= node_radius) {
+            const newEdge = {
+              source: drawingStartNode,
+              target: clickedNode,
+              flow: 0,
+              label: "",
+            };
+            setData((prevData) => ({
+              ...prevData,
+              edges: [...prevData.edges, newEdge],
+            }));
+          }
+
+          // Hide the tooltip when mouse leaves the node (because it is still shown)
+          d3.select("." + styles.tooltip)
+            .style("opacity", 0)
+            .on("end", () => {
+              // Remove the tooltip element from the body
+              d3.select("." + styles.tooltip).remove();
+            });
+        }
+
+        setIsDrawingEdge(false);
+        setDrawingStartNode(null);
+        setDrawingEndNode(null);
+        setShowDragLine(false); // Hide the drag line when the drawing is complete
+
+        // Clear drag line coordinates
+        dragLine.attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 0);
+      }
+    }
+
+    // calculate the distance of click event and nodes
+    function distanceToNode(event, clickedNode) {
+      const [x, y] = d3.pointer(event);
+      const distance = Math.sqrt(
+        (x - clickedNode.x) ** 2 + (y - clickedNode.y) ** 2
+      );
+      return distance;
+    }
+
+    // Function to get the clicked node
+    function getClickedNode(event) {
+      const [x, y] = d3.pointer(event);
+      console.log([x, y]);
+      const clickedNode = simulationRef.current.find(x, y);
+      return clickedNode;
+    }
+
+    svgRef.current.on("mousedown", handleMouseDown);
+    svgRef.current.on("mousemove", handleMouseMove);
+    svgRef.current.on("mouseup", handleMouseUp);
+
+    return () => {
+      svgRef.current.on("mousedown", null);
+      svgRef.current.on("mousemove", null);
+      svgRef.current.on("mouseup", null);
+    };
+  }, [isDrawingEdge, drawingStartNode, zoom_panning_availability]);
 
   // the function tested, but the button doesn't exist.
   function zoomReset() {
