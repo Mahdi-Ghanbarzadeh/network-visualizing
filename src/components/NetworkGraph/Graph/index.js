@@ -491,29 +491,32 @@ const GraphVisualization = ({
 
   // Instead of directly using the handleMouseMove and handleMouseUp functions as event handlers, define them inside a useEffect callback function to capture the current value of isDrawingEdge. This will ensure that the event handlers always use the correct value of isDrawingEdge
   useEffect(() => {
-    console.log("before zoom pan useEffect");
-
-    console.log("after zoom pan useEffect");
-
     // Separate g element for the drag line
     const dragLineContainer = svgRef.current.append("g");
     const dragLine = dragLineContainer
       .append("line")
       .attr("class", "link dragline")
-      .style("stroke", "blue")
+      .style("stroke", "#ccc")
       .style("stroke-width", "2px")
-      .style("pointer-events", "none"); // prevent interfere with mouse events
+      .style("stroke-dasharray", "5,5") // Set dash pattern (5px dash, 5px gap)
+      .style("pointer-events", "none"); // Prevent interference with mouse events
 
     // Event handlers for edge drawing
     function handleMouseDown(event, d) {
-      if (!isDrawingEdge) {
+      if (!isDrawingEdge && !zoom_panning_availability) {
         const clickedNode = getClickedNode(event);
 
         console.log(clickedNode);
 
         if (clickedNode) {
+          console.log("debug");
+          console.log(distanceToNode(event, clickedNode));
+          console.log(node_radius);
           // Check if the clicked position is the same as node radius
           if (distanceToNode(event, clickedNode) <= node_radius) {
+            console.log(
+              "Check if the clicked position is the same as node radius "
+            );
             setIsDrawingEdge(true);
             setDrawingStartNode(clickedNode);
             setDrawingEndNode(null);
@@ -527,20 +530,23 @@ const GraphVisualization = ({
     }
 
     function handleMouseMove(event) {
-      if (isDrawingEdge && drawingStartNode) {
+      if (isDrawingEdge && drawingStartNode && !zoom_panning_availability) {
         const [x, y] = d3.pointer(event);
+
+        // Reverse the current zoom and pan transformation
+        const [reversedX, reversedY] = d3
+          .zoomTransform(svgRef.current.node())
+          .invert([x, y]);
 
         // Calculate the starting point coordinates at the node's border
         const angle = Math.atan2(
-          y - drawingStartNode.y,
-          x - drawingStartNode.x
+          reversedY - drawingStartNode.y,
+          reversedX - drawingStartNode.x
         );
         const startX = drawingStartNode.x + node_radius * Math.cos(angle);
         const startY = drawingStartNode.y + node_radius * Math.sin(angle);
 
         // Check if the mouse is over a node
-        // const overNode = simulationRef.current.find(x, y);
-
         const overNode = getClickedNode(event);
 
         console.log(overNode);
@@ -559,9 +565,14 @@ const GraphVisualization = ({
 
         // If the mouse is not over the drawing start node, update the drag line coordinates
         if (!overStartNode) {
+          // Transform the starting point coordinates to the transformed space
+          const [transformedStartX, transformedStartY] = d3
+            .zoomTransform(svgRef.current.node())
+            .apply([startX, startY]);
+
           dragLine
-            .attr("x1", startX)
-            .attr("y1", startY)
+            .attr("x1", transformedStartX)
+            .attr("y1", transformedStartY)
             .attr("x2", x)
             .attr("y2", y);
 
@@ -596,7 +607,7 @@ const GraphVisualization = ({
     }
 
     function handleMouseUp(event) {
-      if (isDrawingEdge) {
+      if (isDrawingEdge && !zoom_panning_availability) {
         const clickedNode = getClickedNode(event);
 
         console.log(clickedNode);
@@ -641,8 +652,14 @@ const GraphVisualization = ({
     // calculate the distance of click event and nodes
     function distanceToNode(event, clickedNode) {
       const [x, y] = d3.pointer(event);
+
+      // Reverse the current zoom and pan transformation
+      const [reversedX, reversedY] = d3
+        .zoomTransform(svgRef.current.node())
+        .invert([x, y]);
+
       const distance = Math.sqrt(
-        (x - clickedNode.x) ** 2 + (y - clickedNode.y) ** 2
+        (reversedX - clickedNode.x) ** 2 + (reversedY - clickedNode.y) ** 2
       );
       return distance;
     }
@@ -650,8 +667,14 @@ const GraphVisualization = ({
     // Function to get the clicked node
     function getClickedNode(event) {
       const [x, y] = d3.pointer(event);
-      console.log([x, y]);
-      const clickedNode = simulationRef.current.find(x, y);
+
+      // Reverse the current zoom and pan transformation
+      const [reversedX, reversedY] = d3
+        .zoomTransform(svgRef.current.node())
+        .invert([x, y]);
+
+      // Find the node based on the reversed coordinates
+      const clickedNode = simulationRef.current.find(reversedX, reversedY);
       return clickedNode;
     }
 
