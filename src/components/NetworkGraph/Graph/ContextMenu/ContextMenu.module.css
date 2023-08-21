@@ -1,0 +1,58 @@
+/* Style the context menu */
+/* .context_menu {
+  display: block;
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 5px;
+}
+
+.menu_option {
+  padding: 5px;
+  cursor: pointer;
+} */
+
+.context_menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  /* width: 15rem; */
+  font-family: "Arial", sans-serif;
+}
+
+.menu_option {
+  /* padding: 8px 12px; */
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.menu_option:hover {
+  /* background-color: #f0f0f0; */
+  background-color: #eaeaea;
+}
+
+/* .modalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+} */
+
+.modalRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.label {
+  flex: 0 0 auto; /* Prevent the label from growing */
+  width: 100px; /* Set a fixed width for the labels */
+  margin-right: 10px; /* Add spacing between label and input */
+}

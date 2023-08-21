@@ -5,6 +5,7 @@ import Menu from "./Menu";
 
 import domtoimage from "dom-to-image";
 import { saveAs } from "file-saver";
+import ContextMenu from "./ContextMenu";
 
 const GraphVisualization = ({
   width,
@@ -28,9 +29,6 @@ const GraphVisualization = ({
     new Set(["modem1", "switch1", "server2"])
   );
 
-  console.log("--- zoom_panning_availability ---");
-  console.log(zoom_panning_availability);
-
   console.log("--- data ---");
   console.log(data);
 
@@ -41,21 +39,28 @@ const GraphVisualization = ({
   const [dragLineCoords, setDragLineCoords] = useState(null);
   const [showDragLine, setShowDragLine] = useState(false);
 
-  console.log(isDrawingEdge);
-
   // Create a ref to store the graph
   const graphRef = useRef();
 
   const containerGraphRef = useRef();
 
-  // variable to keep track of clicked nodes in order to reset styles
-  let setClickedNode = null;
+  // variable to keep track of clicked node and edge in order to reset styles
+  const clickedEdgeRef = useRef(null);
+  const clickedNodeRef = useRef(null);
 
   // Create a ref to store the simulation, link, linkLabels and node instance
   const simulationRef = useRef(null);
   const linkRef = useRef();
   const linkLabelsRef = useRef();
   const nodeRef = useRef();
+  const nodeLabelsRef = useRef();
+
+  const [contextMenuVisible, setContextMenuVisible] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [rightClickedNodeData, setRightClickedNodeData] = useState(null);
 
   const zoomRef = useRef();
   const svgRef = useRef();
@@ -109,7 +114,6 @@ const GraphVisualization = ({
     function dropHandler(event) {
       event.preventDefault();
       console.log("drop");
-      // Rest of your drop event handler logic
 
       // Parse the dropped node from the dataTransfer
       const newNode = JSON.parse(
@@ -118,19 +122,11 @@ const GraphVisualization = ({
 
       console.log(newNode);
 
-      // Update your graph's data with the new node
-      // const newData = {
-      //   ...data,
-      //   nodes: [...data.nodes, newNode],
-      // };
-
+      // Update graph's data with the new node
       setData((prevData) => ({
         ...prevData,
         nodes: [...prevData.nodes, newNode],
       }));
-
-      console.log("setData");
-      console.log(data);
 
       // Stop the current simulation
       simulationRef.current.stop();
@@ -221,7 +217,157 @@ const GraphVisualization = ({
       )
       .style("opacity", (d) =>
         d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
-      );
+      )
+      .style("cursor", "pointer")
+      .on("click", edgeHandleClick);
+
+    function edgeHandleClick(event, d) {
+      if (clickedEdgeRef.current === d) {
+        // If the clicked edge is already clicked, reset the styles
+        resetStyles();
+      } else {
+        if (clickedEdgeRef.current !== null) {
+          // Reset the styles of the previously clicked edge
+          resetStyles();
+        }
+
+        // Get the clicked edge's source and target nodes
+        clickedEdgeRef.current = d;
+        const sourceNode = clickedEdgeRef.current.source;
+        const targetNode = clickedEdgeRef.current.target;
+
+        // Extract the sibling nodes from the clicked edge
+        const siblingNodes = [sourceNode, targetNode];
+
+        // Update visualization to highlight the clicked edge and its nodes
+        linkRef.current
+          .filter((edge) => edge === clickedEdgeRef.current)
+          .style("opacity", 1)
+          .style("filter", "none")
+          .style("stroke-width", 3.5);
+
+        linkRef.current
+          .filter((edge) => edge !== clickedEdgeRef.current)
+          .style("opacity", 0.05)
+          .style("filter", "grayscale(70%)");
+
+        linkLabelsRef.current
+          .filter((edge) => edge === clickedEdgeRef.current)
+          .style("opacity", 1)
+          .style("filter", "none");
+
+        linkLabelsRef.current
+          .filter((edge) => edge !== clickedEdgeRef.current)
+          .style("opacity", 0.4)
+          .style("filter", "grayscale(70%)");
+
+        nodeRef.current
+          .filter((node) => siblingNodes.includes(node))
+          .style("opacity", 1)
+          .style("filter", "none")
+          .select("circle")
+          .style("fill", (node) =>
+            siblingNodes.includes(node) ? "steelblue" : "steelblue"
+          )
+          .style("stroke", (node) =>
+            siblingNodes.includes(node) ? "#ddd" : "#bbb"
+          )
+          .style("stroke-width", (node) =>
+            siblingNodes.includes(node) ? 3.5 : 2
+          );
+
+        nodeRef.current
+          .filter((node) => !siblingNodes.includes(node))
+          .style("opacity", 0.7)
+          .style("filter", "grayscale(70%)");
+
+        nodeLabelsRef.current
+          .filter((node) => siblingNodes.includes(node))
+          .style("opacity", 1)
+          .style("filter", "none");
+
+        nodeLabelsRef.current
+          .filter((node) => !siblingNodes.includes(node))
+          .style("opacity", 0.4)
+          .style("filter", "grayscale(70%)");
+
+        // Set the clicked edge in order to keep and reset it
+        // clickedEdgeRef.current = clickedEdgeRef.current;
+
+        // Add a keydown event listener
+        window.addEventListener("keydown", handleKeyDown);
+      }
+    }
+
+    // Keyboard event handler
+    function handleKeyDown(event) {
+      console.log("handleKeyDown runs");
+      const isBackspaceOrDelete =
+        event.key === "Backspace" || event.key === "Delete";
+
+      // keep deleted edge in a variable to make sure it deletes
+      const deletedEdge = clickedEdgeRef.current;
+      const deletedNode = clickedNodeRef.current;
+
+      console.log(deletedEdge);
+      console.log(deletedNode);
+
+      if (isBackspaceOrDelete) {
+        if (deletedEdge !== null) {
+          // Remove the clicked edge from data
+          setData((prevData) => ({
+            ...prevData,
+            edges: prevData.edges.filter((edge) => edge !== deletedEdge),
+          }));
+
+          // Reset styles and clicked edge
+          resetStyles();
+        } else if (deletedNode !== null) {
+          // Remove the clicked node from data
+          setData((prevData) => {
+            // Filter out the edges that are connected to the deleted node
+            const filteredEdges = prevData.edges.filter(
+              (edge) =>
+                edge.source !== deletedNode && edge.target !== deletedNode
+            );
+
+            // Filter out the deleted node
+            const filteredNodes = prevData.nodes.filter(
+              (node) => node !== deletedNode
+            );
+
+            return {
+              nodes: filteredNodes,
+              edges: filteredEdges,
+            };
+          });
+          // Reset styles and clicked edge
+          resetStyles();
+        }
+      }
+    }
+
+    // Function to reset the edge styles
+    function resetEdgeStyles() {
+      nodeRef.current
+        .style("opacity", 1)
+        .style("filter", "none")
+        .select("circle")
+        .style("fill", "steelblue")
+        .style("stroke", "#bbb")
+        .style("stroke-width", 1);
+
+      nodeLabelsRef.current.style("opacity", 1).style("filter", "none");
+
+      linkRef.current
+        .style("opacity", (d) =>
+          d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
+        )
+        .style("filter", "none")
+        .style("stroke-width", 2);
+
+      linkLabelsRef.current.style("opacity", 1).style("filter", "none");
+    }
 
     // If you want to animate the edges, you can transition the positions
     linkRef.current
@@ -277,15 +423,31 @@ const GraphVisualization = ({
       .append("g")
       .attr("transform", (d) => `translate(${d.x},${d.y})`)
       .style("cursor", "pointer")
-      .on("click", nodeHandleClick);
+      .on("click", nodeHandleClick)
+      .on("contextmenu", contextMenuHandler);
+
+    function contextMenuHandler(event, node) {
+      event.preventDefault();
+      setContextMenuPosition({ x: event.clientX, y: event.clientY });
+      setContextMenuVisible(true);
+      setRightClickedNodeData(node); // Store clicked node data
+
+      // Hide the tooltip when mouse leaves the node (because it is still shown)
+      d3.select("." + styles.tooltip)
+        .style("opacity", 0)
+        .on("end", () => {
+          // Remove the tooltip element from the body
+          d3.select("." + styles.tooltip).remove();
+        });
+    }
 
     // Click event handler
     function nodeHandleClick(event, d) {
-      if (setClickedNode === d) {
+      if (clickedNodeRef.current === d) {
         // If the clicked node is already clicked, reset the styles
         resetStyles();
       } else {
-        if (setClickedNode !== null) {
+        if (clickedNodeRef.current !== null) {
           // Reset the styles of the previously clicked node
           resetStyles();
         }
@@ -325,6 +487,34 @@ const GraphVisualization = ({
           .style("opacity", 0.7)
           .style("filter", "grayscale(70%)");
 
+        nodeLabelsRef.current
+          .filter(
+            (node) => siblingNodes.includes(node) && siblingNodes.includes(node)
+          )
+          .style("opacity", 1)
+          .style("filter", "none");
+
+        nodeLabelsRef.current
+          .filter(
+            (node) =>
+              !(siblingNodes.includes(node) && siblingNodes.includes(node))
+          )
+          .style("opacity", 0.4)
+          .style("filter", "grayscale(70%)");
+
+        console.log(
+          nodeLabelsRef.current.filter(
+            (node) => siblingNodes.includes(node) && siblingNodes.includes(node)
+          )
+        );
+
+        console.log(
+          nodeLabelsRef.current.filter(
+            (node) =>
+              !(siblingNodes.includes(node) && siblingNodes.includes(node))
+          )
+        );
+
         linkRef.current
           .filter(
             (link) =>
@@ -362,7 +552,10 @@ const GraphVisualization = ({
           .style("filter", "grayscale(70%)");
 
         // Set the clicked node in order to keep and reset it
-        setClickedNode = clickedNode;
+        clickedNodeRef.current = clickedNode;
+
+        // Add a keydown event listener
+        window.addEventListener("keydown", handleKeyDown);
       }
     }
 
@@ -376,16 +569,22 @@ const GraphVisualization = ({
         .style("stroke", "#bbb")
         .style("stroke-width", 1);
 
-      // linkRef.current.style("opacity", 0.6).style("filter", "none");
+      nodeLabelsRef.current.style("opacity", 1).style("filter", "none");
 
       linkRef.current
         .style("opacity", (d) =>
           d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
         )
-        .style("filter", "none");
+        .style("filter", "none")
+        .style("stroke-width", 2);
 
       linkLabelsRef.current.style("opacity", 1).style("filter", "none");
-      setClickedNode = null;
+
+      // Remove the global keydown event listener
+      window.removeEventListener("keydown", handleKeyDown);
+
+      clickedEdgeRef.current = null;
+      clickedNodeRef.current = null;
     }
 
     // Append an outer circle to add a border to the node
@@ -430,7 +629,8 @@ const GraphVisualization = ({
     //   });
 
     // Display the node IP above it if node_label_visibility is true
-    nodeRef.current
+
+    nodeLabelsRef.current = nodeRef.current
       .append("text")
       .attr("class", "node-label")
       .attr("text-anchor", "middle")
@@ -503,20 +703,15 @@ const GraphVisualization = ({
 
     // Event handlers for edge drawing
     function handleMouseDown(event, d) {
+      // Close context menu on any click
+      setContextMenuVisible(false);
+
       if (!isDrawingEdge && !zoom_panning_availability) {
         const clickedNode = getClickedNode(event);
 
-        console.log(clickedNode);
-
         if (clickedNode) {
-          console.log("debug");
-          console.log(distanceToNode(event, clickedNode));
-          console.log(node_radius);
           // Check if the clicked position is the same as node radius
           if (distanceToNode(event, clickedNode) <= node_radius) {
-            console.log(
-              "Check if the clicked position is the same as node radius "
-            );
             setIsDrawingEdge(true);
             setDrawingStartNode(clickedNode);
             setDrawingEndNode(null);
@@ -524,8 +719,6 @@ const GraphVisualization = ({
             setShowDragLine(true); // Show the drag line when starting to draw
           }
         }
-
-        console.log(isDrawingEdge);
       }
     }
 
@@ -549,19 +742,12 @@ const GraphVisualization = ({
         // Check if the mouse is over a node
         const overNode = getClickedNode(event);
 
-        console.log(overNode);
-
         // Check if the mouse is over the drawing start node
         const overEndNode = distanceToNode(event, overNode) <= node_radius;
-
-        console.log("-- overEndNode --");
-        console.log(overEndNode);
 
         // Check if the mouse is over the drawing start node
         const overStartNode =
           distanceToNode(event, drawingStartNode) <= node_radius;
-
-        console.log(overStartNode);
 
         // If the mouse is not over the drawing start node, update the drag line coordinates
         if (!overStartNode) {
@@ -576,13 +762,8 @@ const GraphVisualization = ({
             .attr("x2", x)
             .attr("y2", y);
 
-          console.log("befooooooooooore");
-          console.log(drawingEndNode);
-          console.log(overEndNode);
           // If the node is the drawing end node, increase its radius
           if (overEndNode) {
-            console.log("drawingEndNode === overEndNode");
-
             nodeRef.current
               .filter((node) => node === overNode)
               .select("circle")
@@ -609,8 +790,6 @@ const GraphVisualization = ({
     function handleMouseUp(event) {
       if (isDrawingEdge && !zoom_panning_availability) {
         const clickedNode = getClickedNode(event);
-
-        console.log(clickedNode);
 
         if (
           clickedNode &&
@@ -772,9 +951,9 @@ const GraphVisualization = ({
   useEffect(() => {
     linkLabelsRef.current.text((d) => (edge_label_visibility ? d.label : ""));
 
-    nodeRef.current
-      .select(".node-label")
-      .text((d) => (node_label_visibility ? d.ip_address : ""));
+    nodeLabelsRef.current.text((d) =>
+      node_label_visibility ? d.ip_address : ""
+    );
   }, [node_label_visibility, edge_label_visibility]);
 
   // Use useEffect hook to update the show traffic flow
@@ -1014,6 +1193,25 @@ const GraphVisualization = ({
           {/* Create a container for the graph elements */}
         </svg>
       </div>
+
+      <ContextMenu
+        visible={contextMenuVisible}
+        position={contextMenuPosition}
+        onClose={() => setContextMenuVisible(false)}
+        options={[
+          {
+            label: "Show Information",
+          },
+          {
+            label: "Edit Information",
+          },
+          {
+            label: "Collapse / Expand",
+          },
+        ]}
+        // handleOptionClick={handleOptionClick}
+        clickedNodeData={rightClickedNodeData}
+      />
     </div>
   );
 };
