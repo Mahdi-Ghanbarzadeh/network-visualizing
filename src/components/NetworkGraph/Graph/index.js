@@ -76,6 +76,7 @@ const GraphVisualization = ({
   };
 
   useEffect(() => {
+    console.log("useEffect data changes");
     // D3 code to create the graph visualization
     zoomRef.current = d3
       .zoom()
@@ -199,6 +200,7 @@ const GraphVisualization = ({
 
     // to simulate and update visualization
     if (linkRef.current) {
+      console.log("link remove");
       linkRef.current.remove();
     }
     // Enter/update pattern for the links
@@ -235,6 +237,12 @@ const GraphVisualization = ({
         clickedEdgeRef.current = d;
         const sourceNode = clickedEdgeRef.current.source;
         const targetNode = clickedEdgeRef.current.target;
+
+        console.log("checking sibling nodes");
+        console.log(linkRef.current);
+        console.log(clickedEdgeRef.current);
+        console.log(sourceNode);
+        console.log(targetNode);
 
         // Extract the sibling nodes from the clicked edge
         const siblingNodes = [sourceNode, targetNode];
@@ -330,6 +338,9 @@ const GraphVisualization = ({
               (edge) =>
                 edge.source !== deletedNode && edge.target !== deletedNode
             );
+
+            console.log("connected edge while deleting");
+            console.log(filteredEdges);
 
             // Filter out the deleted node
             const filteredNodes = prevData.nodes.filter(
@@ -460,6 +471,9 @@ const GraphVisualization = ({
             link.target.id === clickedNode.id
         );
 
+        console.log("connectedLinks");
+        console.log(connectedLinks);
+
         // Extract the siblings from connected links
         const siblingNodes = [clickedNode];
         connectedLinks.forEach((link) => {
@@ -505,13 +519,6 @@ const GraphVisualization = ({
         console.log(
           nodeLabelsRef.current.filter(
             (node) => siblingNodes.includes(node) && siblingNodes.includes(node)
-          )
-        );
-
-        console.log(
-          nodeLabelsRef.current.filter(
-            (node) =>
-              !(siblingNodes.includes(node) && siblingNodes.includes(node))
           )
         );
 
@@ -688,6 +695,8 @@ const GraphVisualization = ({
       }
     };
   }, [data]);
+
+  function updateGraph() {}
 
   // Instead of directly using the handleMouseMove and handleMouseUp functions as event handlers, define them inside a useEffect callback function to capture the current value of isDrawingEdge. This will ensure that the event handlers always use the correct value of isDrawingEdge
   useEffect(() => {
@@ -991,6 +1000,13 @@ const GraphVisualization = ({
 
   // Function to initialize the simulation with the initial force properties
   const initializeSimulation = () => {
+    console.log("initializeSimulation function run");
+
+    console.log(data.nodes);
+    console.log(data.edges);
+
+    // simulationRef.current = null;
+
     simulationRef.current = d3
       .forceSimulation(data.nodes)
       .force("center", d3.forceCenter())
@@ -1006,6 +1022,9 @@ const GraphVisualization = ({
           .id((d) => d.id)
       )
       .force("radial", d3.forceRadial());
+
+    console.log(linkRef.current);
+    console.log(nodeRef.current);
 
     simulationRef.current.on("tick", () => {
       // Access link, linkLabels, and node using refs
@@ -1044,6 +1063,7 @@ const GraphVisualization = ({
   // Function to update the simulation forces with new force_properties
   const updateForces = () => {
     if (!simulationRef.current) return;
+    console.log("updateForces function run");
 
     // containerGraphRef.current.clientWidth = width , containerGraphRef.current.clientHeight = height
     simulationRef.current
@@ -1179,6 +1199,17 @@ const GraphVisualization = ({
     return new Blob([u8arr], { type: mime });
   };
 
+  const initialSim = () => {
+    // Stop the current simulation
+    simulationRef.current.stop();
+
+    // Update the simulation with the new data
+    // simulationRef.current.nodes(data.nodes);
+
+    // Reinitialize the simulation with the updated data
+    initializeSimulation();
+  };
+
   return (
     <div className={styles.graph}>
       <Menu
@@ -1210,7 +1241,10 @@ const GraphVisualization = ({
           },
         ]}
         // handleOptionClick={handleOptionClick}
+        data={data}
+        setData={setData}
         clickedNodeData={rightClickedNodeData}
+        initialSim={initialSim}
       />
     </div>
   );

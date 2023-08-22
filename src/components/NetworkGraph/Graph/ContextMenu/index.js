@@ -1,15 +1,20 @@
 import React, { useState, useRef } from "react";
 import styles from "./ContextMenu.module.css";
 import { Modal, Button, Input, Form } from "antd"; // Import Modal and Form from Ant Design
+import data from "./../../../../data/data.json";
 
 function ContextMenu({
   visible,
   position,
   onClose,
   options,
+  data,
+  setData,
   clickedNodeData,
   setContextMenuVisible,
+  initialSim,
 }) {
+  // console.log(data);
   const [showModalVisible, setShowModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [form] = Form.useForm(); // Create a form instance
@@ -17,11 +22,13 @@ function ContextMenu({
   const handleOptionClick = (option) => {
     if (option.label === "Show Information") {
       if (clickedNodeData) {
-        console.log("Clicked node info:", clickedNodeData);
+        // console.log("Clicked node info:", clickedNodeData);
         setShowModalVisible(true); // Set modal visibility first
       }
     } else if (option.label === "Edit Information") {
       console.log("Edit Information function");
+      // console.log(clickedNodeData);
+      form.setFieldsValue(clickedNodeData);
       setEditModalVisible(true);
     } else if (option.label === "Collapse / Expand") {
       // Handle collapse / expand logic here
@@ -32,8 +39,80 @@ function ContextMenu({
   };
 
   const handleEditFormSubmit = (values) => {
-    console.log("Edited values:", values);
+    console.log(values);
+    // Find the index of the clicked node
+    const clickedNodeIndex = data.nodes.findIndex(
+      (node) => node.id === clickedNodeData.id
+    );
+
+    console.log(clickedNodeIndex);
+
+    if (clickedNodeIndex !== -1) {
+      // Check if the edited values are the same as the existing node values
+      const isSameValues = Object.keys(values).every(
+        (key) => values[key] === clickedNodeData[key]
+      );
+
+      if (isSameValues) {
+        // No need to update if values are the same, just close the modal
+        setEditModalVisible(false);
+        return;
+      }
+
+      // Remove the existing node and its connected edges
+      const updatedNodes = data.nodes.filter(
+        (node) => node.id !== clickedNodeData.id
+      );
+      const updatedEdges = data.edges.filter(
+        (edge) =>
+          edge.source.id !== clickedNodeData.id &&
+          edge.target.id !== clickedNodeData.id
+      );
+
+      // Add the updated node with its new information
+      const updatedNode = {
+        ...clickedNodeData,
+        ...values,
+      };
+      updatedNodes.push(updatedNode);
+
+      // Add back the connected edges with the updated node
+      const updatedConnectedEdges = data.edges.map((edge) => {
+        if (
+          edge.source.id === clickedNodeData.id ||
+          edge.target.id === clickedNodeData.id
+        ) {
+          // Update the edge's source or target if it was connected to the updated node
+          return {
+            ...edge,
+            source:
+              edge.source.id === clickedNodeData.id ? updatedNode : edge.source,
+            target:
+              edge.target.id === clickedNodeData.id ? updatedNode : edge.target,
+          };
+        }
+        return edge;
+      });
+
+      console.log(updatedConnectedEdges);
+
+      // Update the data state with the new nodes and connected edges
+      setData({
+        nodes: updatedNodes,
+        edges: [
+          ...data.edges.filter((node) => node === null),
+          ...updatedConnectedEdges,
+        ],
+      });
+
+      setEditModalVisible(false);
+    }
+  };
+
+  const handleCancelEditInformation = () => {
     setEditModalVisible(false);
+    form.resetFields();
+    // form.resetFields()
   };
 
   return (
@@ -83,18 +162,18 @@ function ContextMenu({
         title="Edit Information"
         open={editModalVisible}
         onCancel={() => {
-          setEditModalVisible(false);
+          handleCancelEditInformation();
         }}
         footer={[
           <Button
             key="cancel"
             onClick={() => {
-              setEditModalVisible(false);
+              handleCancelEditInformation();
             }}
           >
             Cancel
           </Button>,
-          <Button key="Edit" type="primary">
+          <Button key="Edit" type="primary" onClick={form.submit}>
             Edit
           </Button>,
         ]}
@@ -106,9 +185,6 @@ function ContextMenu({
             initialValues={clickedNodeData}
           >
             <div className={styles.modalContent}>
-              <Form.Item label="ID" name="id">
-                <Input disabled />
-              </Form.Item>
               <Form.Item
                 label="Device Type"
                 name="device_type"
@@ -164,7 +240,7 @@ function ContextMenu({
               >
                 <Input placeholder="MAC Address" />
               </Form.Item>
-              <Form.Item
+              {/* <Form.Item
                 label="Group Number"
                 name="group_number"
                 rules={[
@@ -172,16 +248,16 @@ function ContextMenu({
                 ]}
               >
                 <Input placeholder="Group Number" />
-              </Form.Item>
+              </Form.Item> */}
             </div>
-            <div className={styles.modalFooter}>
+            {/* <div className={styles.modalFooter}>
               <Button key="cancel" onClick={() => setEditModalVisible(false)}>
                 Cancel
               </Button>
               <Button key="edit" type="primary" htmlType="submit">
                 Edit
               </Button>
-            </div>
+            </div> */}
           </Form>
         )}
       </Modal>
