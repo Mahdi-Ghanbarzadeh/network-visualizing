@@ -41,7 +41,6 @@ const GraphVisualization = ({
 
   // Create a ref to store the graph
   const graphRef = useRef();
-
   const containerGraphRef = useRef();
 
   // variable to keep track of clicked node and edge in order to reset styles
@@ -55,12 +54,14 @@ const GraphVisualization = ({
   const nodeRef = useRef();
   const nodeLabelsRef = useRef();
 
+  const [currentMenuContext, setCurrentMenuContext] = useState();
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
   });
   const [rightClickedNodeData, setRightClickedNodeData] = useState(null);
+  const [rightClickedEdgeData, setRightClickedEdgeData] = useState(null);
 
   const zoomRef = useRef();
   const svgRef = useRef();
@@ -76,7 +77,6 @@ const GraphVisualization = ({
   };
 
   useEffect(() => {
-    console.log("useEffect data changes");
     // D3 code to create the graph visualization
     zoomRef.current = d3
       .zoom()
@@ -114,14 +114,11 @@ const GraphVisualization = ({
 
     function dropHandler(event) {
       event.preventDefault();
-      console.log("drop");
 
       // Parse the dropped node from the dataTransfer
       const newNode = JSON.parse(
         event.dataTransfer.getData("application/x-d3-node")
       );
-
-      console.log(newNode);
 
       // Update graph's data with the new node
       setData((prevData) => ({
@@ -132,14 +129,8 @@ const GraphVisualization = ({
       // Stop the current simulation
       simulationRef.current.stop();
 
-      // Update the simulation with the new data
-      // simulationRef.current.nodes(data.nodes);
-
       // Reinitialize the simulation with the updated data
       initializeSimulation();
-
-      // // Restart the simulation
-      // simulationRef.current.alpha(1).restart();
     }
 
     function dragEnterHandler(event) {
@@ -200,7 +191,6 @@ const GraphVisualization = ({
 
     // to simulate and update visualization
     if (linkRef.current) {
-      console.log("link remove");
       linkRef.current.remove();
     }
     // Enter/update pattern for the links
@@ -221,7 +211,19 @@ const GraphVisualization = ({
         d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
       )
       .style("cursor", "pointer")
-      .on("click", edgeHandleClick);
+      .on("click", edgeHandleClick)
+      .on("contextmenu", edgeContextMenuHandler);
+
+    function edgeContextMenuHandler(event, edge) {
+      event.preventDefault();
+      setContextMenuPosition({ x: event.clientX, y: event.clientY });
+      setContextMenuVisible(true);
+      setRightClickedEdgeData(edge); // Store clicked node data
+      setCurrentMenuContext("Edge");
+
+      // Hide the tooltip when mouse leaves the node (because it is still shown)
+      hideTooltip();
+    }
 
     function edgeHandleClick(event, d) {
       if (clickedEdgeRef.current === d) {
@@ -237,12 +239,6 @@ const GraphVisualization = ({
         clickedEdgeRef.current = d;
         const sourceNode = clickedEdgeRef.current.source;
         const targetNode = clickedEdgeRef.current.target;
-
-        console.log("checking sibling nodes");
-        console.log(linkRef.current);
-        console.log(clickedEdgeRef.current);
-        console.log(sourceNode);
-        console.log(targetNode);
 
         // Extract the sibling nodes from the clicked edge
         const siblingNodes = [sourceNode, targetNode];
@@ -307,79 +303,6 @@ const GraphVisualization = ({
       }
     }
 
-    // Keyboard event handler
-    function handleKeyDown(event) {
-      console.log("handleKeyDown runs");
-      const isBackspaceOrDelete =
-        event.key === "Backspace" || event.key === "Delete";
-
-      // keep deleted edge in a variable to make sure it deletes
-      const deletedEdge = clickedEdgeRef.current;
-      const deletedNode = clickedNodeRef.current;
-
-      console.log(deletedEdge);
-      console.log(deletedNode);
-
-      if (isBackspaceOrDelete) {
-        if (deletedEdge !== null) {
-          // Remove the clicked edge from data
-          setData((prevData) => ({
-            ...prevData,
-            edges: prevData.edges.filter((edge) => edge !== deletedEdge),
-          }));
-
-          // Reset styles and clicked edge
-          resetStyles();
-        } else if (deletedNode !== null) {
-          // Remove the clicked node from data
-          setData((prevData) => {
-            // Filter out the edges that are connected to the deleted node
-            const filteredEdges = prevData.edges.filter(
-              (edge) =>
-                edge.source !== deletedNode && edge.target !== deletedNode
-            );
-
-            console.log("connected edge while deleting");
-            console.log(filteredEdges);
-
-            // Filter out the deleted node
-            const filteredNodes = prevData.nodes.filter(
-              (node) => node !== deletedNode
-            );
-
-            return {
-              nodes: filteredNodes,
-              edges: filteredEdges,
-            };
-          });
-          // Reset styles and clicked edge
-          resetStyles();
-        }
-      }
-    }
-
-    // Function to reset the edge styles
-    function resetEdgeStyles() {
-      nodeRef.current
-        .style("opacity", 1)
-        .style("filter", "none")
-        .select("circle")
-        .style("fill", "steelblue")
-        .style("stroke", "#bbb")
-        .style("stroke-width", 1);
-
-      nodeLabelsRef.current.style("opacity", 1).style("filter", "none");
-
-      linkRef.current
-        .style("opacity", (d) =>
-          d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
-        )
-        .style("filter", "none")
-        .style("stroke-width", 2);
-
-      linkLabelsRef.current.style("opacity", 1).style("filter", "none");
-    }
-
     // If you want to animate the edges, you can transition the positions
     linkRef.current
       .transition()
@@ -435,21 +358,17 @@ const GraphVisualization = ({
       .attr("transform", (d) => `translate(${d.x},${d.y})`)
       .style("cursor", "pointer")
       .on("click", nodeHandleClick)
-      .on("contextmenu", contextMenuHandler);
+      .on("contextmenu", nodeContextMenuHandler);
 
-    function contextMenuHandler(event, node) {
+    function nodeContextMenuHandler(event, node) {
       event.preventDefault();
       setContextMenuPosition({ x: event.clientX, y: event.clientY });
       setContextMenuVisible(true);
       setRightClickedNodeData(node); // Store clicked node data
+      setCurrentMenuContext("Node");
 
       // Hide the tooltip when mouse leaves the node (because it is still shown)
-      d3.select("." + styles.tooltip)
-        .style("opacity", 0)
-        .on("end", () => {
-          // Remove the tooltip element from the body
-          d3.select("." + styles.tooltip).remove();
-        });
+      hideTooltip();
     }
 
     // Click event handler
@@ -470,9 +389,6 @@ const GraphVisualization = ({
             link.source.id === clickedNode.id ||
             link.target.id === clickedNode.id
         );
-
-        console.log("connectedLinks");
-        console.log(connectedLinks);
 
         // Extract the siblings from connected links
         const siblingNodes = [clickedNode];
@@ -515,12 +431,6 @@ const GraphVisualization = ({
           )
           .style("opacity", 0.4)
           .style("filter", "grayscale(70%)");
-
-        console.log(
-          nodeLabelsRef.current.filter(
-            (node) => siblingNodes.includes(node) && siblingNodes.includes(node)
-          )
-        );
 
         linkRef.current
           .filter(
@@ -566,34 +476,6 @@ const GraphVisualization = ({
       }
     }
 
-    // Function to reset the styles
-    function resetStyles() {
-      nodeRef.current
-        .style("opacity", 1)
-        .style("filter", "none")
-        .select("circle")
-        .style("fill", "steelblue")
-        .style("stroke", "#bbb")
-        .style("stroke-width", 1);
-
-      nodeLabelsRef.current.style("opacity", 1).style("filter", "none");
-
-      linkRef.current
-        .style("opacity", (d) =>
-          d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
-        )
-        .style("filter", "none")
-        .style("stroke-width", 2);
-
-      linkLabelsRef.current.style("opacity", 1).style("filter", "none");
-
-      // Remove the global keydown event listener
-      window.removeEventListener("keydown", handleKeyDown);
-
-      clickedEdgeRef.current = null;
-      clickedNodeRef.current = null;
-    }
-
     // Append an outer circle to add a border to the node
     nodeRef.current
       .append("circle")
@@ -636,7 +518,6 @@ const GraphVisualization = ({
     //   });
 
     // Display the node IP above it if node_label_visibility is true
-
     nodeLabelsRef.current = nodeRef.current
       .append("text")
       .attr("class", "node-label")
@@ -698,6 +579,92 @@ const GraphVisualization = ({
 
   function updateGraph() {}
 
+  function hideTooltip() {
+    d3.select("." + styles.tooltip)
+      .style("opacity", 0)
+      .on("end", () => {
+        d3.select("." + styles.tooltip).remove();
+      });
+  }
+
+  // Keyboard event handler
+  function handleKeyDown(event) {
+    console.log("handleKeyDown runs");
+    const isBackspaceOrDelete =
+      event.key === "Backspace" || event.key === "Delete";
+
+    // keep deleted edge in a variable to make sure it deletes
+    const deletedEdge = clickedEdgeRef.current;
+    const deletedNode = clickedNodeRef.current;
+
+    if (isBackspaceOrDelete) {
+      if (deletedEdge !== null || deletedNode !== null) {
+        confirmDeleteAction(deletedEdge, deletedNode);
+      }
+    }
+  }
+
+  // Function to reset the styles
+  function resetStyles() {
+    nodeRef.current
+      .style("opacity", 1)
+      .style("filter", "none")
+      .select("circle")
+      .style("fill", "steelblue")
+      .style("stroke", "#bbb")
+      .style("stroke-width", 1);
+
+    nodeLabelsRef.current.style("opacity", 1).style("filter", "none");
+
+    linkRef.current
+      .style("opacity", (d) =>
+        d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
+      )
+      .style("filter", "none")
+      .style("stroke-width", 2);
+
+    linkLabelsRef.current.style("opacity", 1).style("filter", "none");
+
+    // Remove the global keydown event listener
+    window.removeEventListener("keydown", handleKeyDown);
+
+    clickedEdgeRef.current = null;
+    clickedNodeRef.current = null;
+  }
+
+  function confirmDeleteAction(deletedEdge, deletedNode) {
+    if (deletedEdge !== null) {
+      // Remove the clicked edge from data
+      setData((prevData) => ({
+        ...prevData,
+        edges: prevData.edges.filter((edge) => edge !== deletedEdge),
+      }));
+
+      // Reset styles and clicked edge
+      resetStyles();
+    } else if (deletedNode !== null) {
+      // Remove the clicked node from data
+      setData((prevData) => {
+        // Filter out the edges that are connected to the deleted node
+        const filteredEdges = prevData.edges.filter(
+          (edge) => edge.source !== deletedNode && edge.target !== deletedNode
+        );
+
+        // Filter out the deleted node
+        const filteredNodes = prevData.nodes.filter(
+          (node) => node !== deletedNode
+        );
+
+        return {
+          nodes: filteredNodes,
+          edges: filteredEdges,
+        };
+      });
+      // Reset styles and clicked edge
+      resetStyles();
+    }
+  }
+
   // Instead of directly using the handleMouseMove and handleMouseUp functions as event handlers, define them inside a useEffect callback function to capture the current value of isDrawingEdge. This will ensure that the event handlers always use the correct value of isDrawingEdge
   useEffect(() => {
     // Separate g element for the drag line
@@ -713,7 +680,7 @@ const GraphVisualization = ({
     // Event handlers for edge drawing
     function handleMouseDown(event, d) {
       // Close context menu on any click
-      setContextMenuVisible(false);
+      contextMenuCloseHandler();
 
       if (!isDrawingEdge && !zoom_panning_availability) {
         const clickedNode = getClickedNode(event);
@@ -784,11 +751,6 @@ const GraphVisualization = ({
               .attr("r", node_radius)
               .style("stroke-width", "1px"); // Reset stroke width
           }
-
-          // // Reset the start node's border size
-          // if (overStartNode) {
-          //   d3.select(drawingStartNode).select("circle").attr("r", node_radius);
-          // }
         } else {
           // Hide the drag line if the mouse is over the drawing start node
           dragLine.attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 0);
@@ -819,12 +781,7 @@ const GraphVisualization = ({
           }
 
           // Hide the tooltip when mouse leaves the node (because it is still shown)
-          d3.select("." + styles.tooltip)
-            .style("opacity", 0)
-            .on("end", () => {
-              // Remove the tooltip element from the body
-              d3.select("." + styles.tooltip).remove();
-            });
+          hideTooltip();
         }
 
         setIsDrawingEdge(false);
@@ -1000,13 +957,6 @@ const GraphVisualization = ({
 
   // Function to initialize the simulation with the initial force properties
   const initializeSimulation = () => {
-    console.log("initializeSimulation function run");
-
-    console.log(data.nodes);
-    console.log(data.edges);
-
-    // simulationRef.current = null;
-
     simulationRef.current = d3
       .forceSimulation(data.nodes)
       .force("center", d3.forceCenter())
@@ -1022,9 +972,6 @@ const GraphVisualization = ({
           .id((d) => d.id)
       )
       .force("radial", d3.forceRadial());
-
-    console.log(linkRef.current);
-    console.log(nodeRef.current);
 
     simulationRef.current.on("tick", () => {
       // Access link, linkLabels, and node using refs
@@ -1063,7 +1010,6 @@ const GraphVisualization = ({
   // Function to update the simulation forces with new force_properties
   const updateForces = () => {
     if (!simulationRef.current) return;
-    console.log("updateForces function run");
 
     // containerGraphRef.current.clientWidth = width , containerGraphRef.current.clientHeight = height
     simulationRef.current
@@ -1199,16 +1145,9 @@ const GraphVisualization = ({
     return new Blob([u8arr], { type: mime });
   };
 
-  const initialSim = () => {
-    // Stop the current simulation
-    simulationRef.current.stop();
-
-    // Update the simulation with the new data
-    // simulationRef.current.nodes(data.nodes);
-
-    // Reinitialize the simulation with the updated data
-    initializeSimulation();
-  };
+  function contextMenuCloseHandler() {
+    setContextMenuVisible(false);
+  }
 
   return (
     <div className={styles.graph}>
@@ -1228,23 +1167,43 @@ const GraphVisualization = ({
       <ContextMenu
         visible={contextMenuVisible}
         position={contextMenuPosition}
-        onClose={() => setContextMenuVisible(false)}
-        options={[
-          {
-            label: "Show Information",
-          },
-          {
-            label: "Edit Information",
-          },
-          {
-            label: "Collapse / Expand",
-          },
-        ]}
-        // handleOptionClick={handleOptionClick}
+        onClose={() => {
+          contextMenuCloseHandler();
+        }}
+        options={
+          currentMenuContext === "Node"
+            ? [
+                {
+                  label: "Show Information",
+                },
+                {
+                  label: "Edit Information",
+                },
+                {
+                  label: "Collapse / Expand",
+                },
+                {
+                  label: "Delete Node",
+                },
+              ]
+            : [
+                {
+                  label: "Show Information",
+                },
+                {
+                  label: "Edit Information",
+                },
+                {
+                  label: "Delete Edge",
+                },
+              ]
+        }
         data={data}
         setData={setData}
         clickedNodeData={rightClickedNodeData}
-        initialSim={initialSim}
+        clickedEdgeData={rightClickedEdgeData}
+        confirmDeleteAction={confirmDeleteAction}
+        currentMenuContext={currentMenuContext}
       />
     </div>
   );

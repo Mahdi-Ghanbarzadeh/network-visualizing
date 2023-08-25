@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import styles from "./ContextMenu.module.css";
-import { Modal, Button, Input, Form } from "antd"; // Import Modal and Form from Ant Design
+import { Modal, Button, Input, Form, InputNumber } from "antd"; // Import Modal and Form from Ant Design
 import data from "./../../../../data/data.json";
 
 function ContextMenu({
@@ -11,41 +11,62 @@ function ContextMenu({
   data,
   setData,
   clickedNodeData,
+  clickedEdgeData,
   setContextMenuVisible,
-  initialSim,
+  confirmDeleteAction,
+  currentMenuContext,
 }) {
-  // console.log(data);
-  const [showModalVisible, setShowModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [form] = Form.useForm(); // Create a form instance
+  // variables related to "node" context menu
+  const [nodeInformationModalVisibility, setNodeInformationModalVisibility] =
+    useState(false);
+  const [nodeEditModalVisibility, setNodeEditModalVisibility] = useState(false);
+  const [nodeForm] = Form.useForm(); // Create a form instance for editing node
+
+  // variables related to "edge" context menu
+  const [edgeInformationModalVisibility, setEdgeInformationModalVisibility] =
+    useState(false);
+  const [edgeEditModalVisibility, setEdgeEditModalVisibility] = useState(false);
+  const [edgeForm] = Form.useForm(); // Create a form instance for editing edge
 
   const handleOptionClick = (option) => {
-    if (option.label === "Show Information") {
-      if (clickedNodeData) {
-        // console.log("Clicked node info:", clickedNodeData);
-        setShowModalVisible(true); // Set modal visibility first
+    if (currentMenuContext === "Node") {
+      console.log("node options");
+      if (option.label === "Show Information") {
+        if (clickedNodeData) {
+          setNodeInformationModalVisibility(true);
+        }
+      } else if (option.label === "Edit Information") {
+        nodeForm.setFieldsValue(clickedNodeData);
+        setNodeEditModalVisibility(true);
+      } else if (option.label === "Collapse / Expand") {
+        // Handle collapse / expand logic here
+        console.log("Collapse / Expand function");
+      } else if (option.label === "Delete Node") {
+        console.log("delete function");
+        confirmDeleteAction(null, clickedNodeData);
       }
-    } else if (option.label === "Edit Information") {
-      console.log("Edit Information function");
-      // console.log(clickedNodeData);
-      form.setFieldsValue(clickedNodeData);
-      setEditModalVisible(true);
-    } else if (option.label === "Collapse / Expand") {
-      // Handle collapse / expand logic here
-      console.log("Collapse / Expand function");
+    } else if (currentMenuContext === "Edge") {
+      console.log("edge options");
+      if (option.label === "Show Information") {
+        if (clickedEdgeData) {
+          setEdgeInformationModalVisibility(true);
+        }
+      } else if (option.label === "Edit Information") {
+        edgeForm.setFieldsValue(clickedEdgeData);
+        setEdgeEditModalVisibility(true);
+      } else if (option.label === "Delete Edge") {
+        confirmDeleteAction(clickedEdgeData, null);
+      }
     }
 
     onClose();
   };
 
-  const handleEditFormSubmit = (values) => {
-    console.log(values);
+  const handleNodeEditFormSubmit = (values) => {
     // Find the index of the clicked node
     const clickedNodeIndex = data.nodes.findIndex(
       (node) => node.id === clickedNodeData.id
     );
-
-    console.log(clickedNodeIndex);
 
     if (clickedNodeIndex !== -1) {
       // Check if the edited values are the same as the existing node values
@@ -55,18 +76,13 @@ function ContextMenu({
 
       if (isSameValues) {
         // No need to update if values are the same, just close the modal
-        setEditModalVisible(false);
+        setNodeEditModalVisibility(false);
         return;
       }
 
       // Remove the existing node and its connected edges
       const updatedNodes = data.nodes.filter(
         (node) => node.id !== clickedNodeData.id
-      );
-      const updatedEdges = data.edges.filter(
-        (edge) =>
-          edge.source.id !== clickedNodeData.id &&
-          edge.target.id !== clickedNodeData.id
       );
 
       // Add the updated node with its new information
@@ -94,25 +110,107 @@ function ContextMenu({
         return edge;
       });
 
-      console.log(updatedConnectedEdges);
-
       // Update the data state with the new nodes and connected edges
       setData({
         nodes: updatedNodes,
         edges: [
-          ...data.edges.filter((node) => node === null),
+          ...data.edges.filter((edge) => edge === null),
           ...updatedConnectedEdges,
         ],
       });
 
-      setEditModalVisible(false);
+      setNodeEditModalVisibility(false);
     }
   };
 
+  const handleEdgeEditFormSubmit = (values) => {
+    if (areEdgeFormValuesEqual(clickedEdgeData, values)) {
+      setEdgeEditModalVisibility(false);
+      return;
+    }
+
+    // Find the index of the clicked edge
+    const clickedEdgeIndex = data.edges.findIndex(
+      (edge) => edge.index === clickedEdgeData.index
+    );
+
+    if (clickedEdgeIndex !== -1) {
+      // Find the index of the source and target nodes in the nodes array
+      const sourceNodeIndex = data.nodes.findIndex(
+        (node) => node.id === values.source.id
+      );
+      const targetNodeIndex = data.nodes.findIndex(
+        (node) => node.id === values.target.id
+      );
+
+      if (sourceNodeIndex !== -1 && targetNodeIndex !== -1) {
+        const updatedNodes = data.nodes.filter(
+          (node) => node.id !== values.source.id && node.id !== values.target.id
+        );
+
+        // Update the data with the edited edge information
+        const updatedEdges = data.edges.map((edge, index) =>
+          index === clickedEdgeIndex
+            ? {
+                ...edge,
+                ...values,
+                source: data.nodes[sourceNodeIndex],
+                target: data.nodes[targetNodeIndex],
+              }
+            : edge
+        );
+
+        updatedNodes.push(data.nodes[sourceNodeIndex]);
+        updatedNodes.push(data.nodes[targetNodeIndex]);
+
+        setData({
+          edges: updatedEdges,
+          nodes: updatedNodes,
+        });
+
+        setEdgeEditModalVisibility(false);
+      }
+    }
+  };
+
+  // Function to check if edge form values are equal
+  const areEdgeFormValuesEqual = (originalValues, newValues) => {
+    return (
+      originalValues.source.id === newValues.source.id &&
+      originalValues.target.id === newValues.target.id &&
+      originalValues.label === newValues.label &&
+      originalValues.flow === newValues.flow
+    );
+  };
+
+  // const handleEdgeEditFormSubmit = (values) => {
+  //   console.log("Submitting edited edge data:", values);
+
+  //   // Assuming you have a way to update the data with the edited edge information
+  //   // Update the data with the edited edge information
+  //   const updatedEdges = data.edges.map((edge) =>
+  //     edge.index === clickedEdgeData.index ? { ...edge, ...values } : edge
+  //   );
+
+  //   console.log("updatedEdges");
+  //   console.log(updatedEdges);
+
+  //   // Update the data state with the updated edges
+  //   setData((prevData) => ({
+  //     nodes: [...data.nodes.filter((node) => node === null), ...data.nodes],
+  //     edges: updatedEdges,
+  //   }));
+
+  //   // Close the modal
+  //   setEdgeEditModalVisibility(false);
+  // };
+
   const handleCancelEditInformation = () => {
-    setEditModalVisible(false);
-    form.resetFields();
-    // form.resetFields()
+    setNodeEditModalVisibility(false);
+    setEdgeEditModalVisibility(false);
+
+    nodeForm.resetFields();
+    edgeForm.resetFields();
   };
 
   return (
@@ -138,9 +236,9 @@ function ContextMenu({
       )}
       <Modal
         title="Node Information"
-        open={showModalVisible}
+        open={nodeInformationModalVisibility}
         onCancel={() => {
-          setShowModalVisible(false);
+          setNodeInformationModalVisibility(false);
         }}
         footer={null}
       >
@@ -160,7 +258,7 @@ function ContextMenu({
 
       <Modal
         title="Edit Information"
-        open={editModalVisible}
+        open={nodeEditModalVisibility}
         onCancel={() => {
           handleCancelEditInformation();
         }}
@@ -173,15 +271,15 @@ function ContextMenu({
           >
             Cancel
           </Button>,
-          <Button key="Edit" type="primary" onClick={form.submit}>
+          <Button key="Edit" type="primary" onClick={nodeForm.submit}>
             Edit
           </Button>,
         ]}
       >
         {clickedNodeData && (
           <Form
-            form={form}
-            onFinish={handleEditFormSubmit}
+            form={nodeForm}
+            onFinish={handleNodeEditFormSubmit}
             initialValues={clickedNodeData}
           >
             <div className={styles.modalContent}>
@@ -240,24 +338,91 @@ function ContextMenu({
               >
                 <Input placeholder="MAC Address" />
               </Form.Item>
-              {/* <Form.Item
-                label="Group Number"
-                name="group_number"
+            </div>
+          </Form>
+        )}
+      </Modal>
+
+      <Modal
+        title="Edge Information"
+        open={edgeInformationModalVisibility}
+        onCancel={() => {
+          setEdgeInformationModalVisibility(false);
+        }}
+        footer={null}
+      >
+        {console.log(clickedEdgeData)}
+        {clickedEdgeData && (
+          <div>
+            <p>Source: {clickedEdgeData.source.id}</p>
+            <p>Target: {clickedEdgeData.target.id}</p>
+            <p>Label: {clickedEdgeData.label}</p>
+            <p>Flow: {clickedEdgeData.flow}</p>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        title="Edit Information"
+        open={edgeEditModalVisibility}
+        onCancel={() => {
+          handleCancelEditInformation();
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              handleCancelEditInformation();
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button key="Edit" type="primary" onClick={edgeForm.submit}>
+            Edit
+          </Button>,
+        ]}
+      >
+        {console.log(clickedEdgeData)}
+        {clickedEdgeData && (
+          <Form
+            form={edgeForm}
+            onFinish={handleEdgeEditFormSubmit}
+            initialValues={clickedEdgeData}
+          >
+            <div className={styles.modalContent}>
+              <Form.Item
+                label="Source"
+                name={["source", "id"]}
                 rules={[
-                  { required: true, message: "Please input the group number!" },
+                  { required: true, message: "Please input the source!" },
                 ]}
               >
-                <Input placeholder="Group Number" />
-              </Form.Item> */}
+                <Input placeholder="Source" />
+              </Form.Item>
+              <Form.Item
+                label="Target"
+                name={["target", "id"]}
+                rules={[
+                  { required: true, message: "Please input the target!" },
+                ]}
+              >
+                <Input placeholder="Target" />
+              </Form.Item>
+              <Form.Item
+                label="Label"
+                name="label"
+                rules={[{ required: true, message: "Please input the label!" }]}
+              >
+                <Input placeholder="Label" />
+              </Form.Item>
+              <Form.Item
+                label="Flow"
+                name="flow"
+                rules={[{ required: true, message: "Please input the flow!" }]}
+              >
+                <InputNumber placeholder="Flow" />
+              </Form.Item>
             </div>
-            {/* <div className={styles.modalFooter}>
-              <Button key="cancel" onClick={() => setEditModalVisible(false)}>
-                Cancel
-              </Button>
-              <Button key="edit" type="primary" htmlType="submit">
-                Edit
-              </Button>
-            </div> */}
           </Form>
         )}
       </Modal>
