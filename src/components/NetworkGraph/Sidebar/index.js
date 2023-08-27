@@ -10,7 +10,6 @@ import {
 import { Tooltip } from "../../Common/Tooltip";
 
 import styles from "./Sidebar.module.css";
-import { style } from "d3";
 const { Panel } = Collapse;
 
 const Sidebar = ({
@@ -28,20 +27,8 @@ const Sidebar = ({
   zoom_panning_availability,
   setZoomPanning,
 }) => {
-  // const device_types = [
-  //   { device_type: "computer", icon: "icons/computer.svg" },
-  //   { device_type: "laptop", icon: "icons/laptop.svg" },
-  //   { device_type: "phone", icon: "icons/phone.svg" },
-  //   { device_type: "printer", icon: "icons/printer.svg" },
-  //   { device_type: "server", icon: "icons/server.svg" },
-  //   { device_type: "switch", icon: "icons/switch.svg" },
-  //   { device_type: "modem", icon: "icons/modem.svg" },
-  //   { device_type: "router", icon: "icons/router.svg" },
-  //   { device_type: "firewall", icon: "icons/firewall.svg" },
-  //   { device_type: "internet", icon: "icons/internet.svg" },
-  // ];
-
   const handleChange = (section, key, value) => {
+    console.log("handleChange called with:", section, key, value);
     setForceProperties((prevProperties) => ({
       ...prevProperties,
       [section]: {
@@ -108,7 +95,6 @@ const Sidebar = ({
             maxHeight: "calc(100vh - 5rem)",
             overflowY: "auto",
           }}
-          // className={styles.collapse}
         >
           <Panel header="Network Simulation" key="simulation">
             <div className={styles.simulation}>
@@ -126,7 +112,7 @@ const Sidebar = ({
                     draggable
                     onDragStart={(event) =>
                       handleDragStart(event, {
-                        id: guidGenerator() /* other properties */,
+                        id: guidGenerator(),
                         device_type: iconInfo.device_type,
                       })
                     }
@@ -151,6 +137,7 @@ const Sidebar = ({
                       setZoomPanning(!value);
                     }}
                     checked={!zoom_panning_availability}
+                    data-testid="draw-edge"
                   />
                   <span>Draw Edge</span>
                 </div>
@@ -167,6 +154,7 @@ const Sidebar = ({
                     unCheckedChildren="Off"
                     onChange={(value) => setNodeLabelVisibility(value)}
                     checked={node_label_visibility}
+                    data-testid="show-node"
                   />
                   <span>Show Node Labels</span>
                 </div>
@@ -177,6 +165,7 @@ const Sidebar = ({
                     unCheckedChildren="Off"
                     onChange={(value) => setEdgeLabelVisibility(value)}
                     checked={edge_label_visibility}
+                    data-testid="show-edge"
                   />
                   <span>Show Edge Labels</span>
                 </div>
@@ -187,6 +176,7 @@ const Sidebar = ({
                     unCheckedChildren="Off"
                     onChange={(value) => setTrafficFlowVisibility(value)}
                     checked={traffic_flow_visibility}
+                    data-testid="show-traffic-flow"
                   />
                   <span>Show Traffic Flow</span>
                 </div>
@@ -197,6 +187,7 @@ const Sidebar = ({
                     unCheckedChildren="Off"
                     onChange={(value) => setVulnerabilityVisibility(value)}
                     checked={vulnerability_visibility}
+                    data-testid="show-vulnerability"
                   />
                   <span>Show Vulnerability</span>
                 </div>
@@ -212,19 +203,21 @@ const Sidebar = ({
                   this location.
                 </span>
 
-                <div className={styles.column}>
+                <div className={styles.column} data-testid="x-coord-container">
                   <span>
                     X-coordinate{" "}
                     <Tooltip title="A value between 0 and 1, indicating the x-coordinate of the center point. 0 represents the left edge of the container, and 1 represents the right edge."></Tooltip>
                   </span>
                   <Slider
                     min={0}
-                    max={1}
+                    max={2}
                     step={0.01}
                     value={forceProperties.center.x}
                     onChange={(value) => handleChange("center", "x", value)}
-                    className={style.test}
+                    data-testid="x-coord"
+                    name="x-coord"
                   />
+                  {console.log("test coord")}
                 </div>
 
                 <div className={styles.column}>
@@ -253,6 +246,7 @@ const Sidebar = ({
                     onChange={(value) =>
                       handleChange("center", "strength", value)
                     }
+                    data-testid="center-strength"
                   />
                 </div>
               </div>
@@ -274,6 +268,7 @@ const Sidebar = ({
                       handleChange("charge", "enabled", value)
                     }
                     checked={forceProperties.charge.enabled}
+                    data-testid="charge-switch"
                   />
                 </div>
 
@@ -291,6 +286,7 @@ const Sidebar = ({
                       handleChange("charge", "strength", value)
                     }
                     disabled={!forceProperties.charge.enabled}
+                    data-testid="charge-strength"
                   />
                 </div>
 
@@ -308,6 +304,7 @@ const Sidebar = ({
                       handleChange("charge", "distanceMin", value)
                     }
                     disabled={!forceProperties.charge.enabled}
+                    data-testid="charge-distance-min"
                   />
                 </div>
 
@@ -325,6 +322,7 @@ const Sidebar = ({
                       handleChange("charge", "distanceMax", value)
                     }
                     disabled={!forceProperties.charge.enabled}
+                    data-testid="charge-distance-max"
                   />
                 </div>
 

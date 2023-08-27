@@ -3,9 +3,6 @@
 // set the dimensions and margins of the graph
 export const margin = { top: 10, right: 0, bottom: 10, left: 10 };
 
-// export const width = 1100 - margin.left - margin.right;
-// export const height = 700 - margin.top - margin.bottom;
-
 // dynamic width and height in order to use full screen mode better
 export const width = "calc(100vw - 350px - 6.5rem)";
 export const height = "calc(100vh - 6.5rem)";
