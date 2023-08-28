@@ -29,18 +29,18 @@ export const force_properties = {
   center: {
     x: 0.5, // min: 0, max: 1
     y: 0.5, // min: 0, max: 1
-    strength: 0.5, // min: 0.1 max: 1
+    strength: 1, // min: 0.1 max: 1
   },
   charge: {
     enabled: true,
-    strength: -500, // min: -1000, max: 1000
-    distanceMin: 1, // min: 0, max: 50
-    distanceMax: 2000, // min: 0, max: 2000
+    strength: -1000, // min: -1000, max: 1000
+    distanceMin: 50, // min: 0, max: 50
+    distanceMax: 500, // min: 0, max: 2000
     theta: 0, // min: -1, max: 1
   },
   collide: {
     enabled: true,
-    radius: node_radius + 15, // min: 0, max: 100
+    radius: node_radius + 25, // min: 0, max: 100
     strength: 0.7, // min: 0, max: 1
     iterations: 1, // min: 1, max: 10
   },
@@ -56,7 +56,7 @@ export const force_properties = {
   },
   link: {
     enabled: true,
-    distance: 100, // min: 0, max: 500
+    distance: 125, // min: 0, max: 500
     iterations: 1, // min: 1, max: 10
     strength: 1, // set
   },

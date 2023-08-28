@@ -11,11 +11,16 @@ function ContextMenu({
   data,
   setData,
   clickedNodeData,
+  setClickedNodeData,
   clickedEdgeData,
+  setClickedEdgeData,
   setContextMenuVisible,
   confirmDeleteAction,
   currentMenuContext,
 }) {
+  console.log("ContextMenu component");
+  console.log("clickedNodeData");
+  console.log(clickedNodeData);
   // variables related to "node" context menu
   const [nodeInformationModalVisibility, setNodeInformationModalVisibility] =
     useState(false);
@@ -36,6 +41,9 @@ function ContextMenu({
           setNodeInformationModalVisibility(true);
         }
       } else if (option.label === "Edit Information") {
+        console.log("clickedNodeData in if");
+        console.log(clickedNodeData);
+        console.log(nodeForm.getFieldValue());
         nodeForm.setFieldsValue(clickedNodeData);
         setNodeEditModalVisibility(true);
       } else if (option.label === "Collapse / Expand") {
@@ -206,8 +214,13 @@ function ContextMenu({
   // };
 
   const handleCancelEditInformation = () => {
+    console.log("run handleCancelEditInformation");
     setNodeEditModalVisibility(false);
     setEdgeEditModalVisibility(false);
+
+    // set right clicked edge and node to null to prevent possible bug
+    setClickedNodeData(null);
+    setClickedEdgeData(null);
 
     nodeForm.resetFields();
     edgeForm.resetFields();
@@ -276,6 +289,7 @@ function ContextMenu({
           </Button>,
         ]}
       >
+        {console.log(clickedNodeData)}
         {clickedNodeData && (
           <Form
             form={nodeForm}
@@ -328,6 +342,15 @@ function ContextMenu({
                 ]}
               >
                 <Input placeholder="IP Address" />
+              </Form.Item>
+              <Form.Item
+                label="Subnet Mask"
+                name="subnet_mask"
+                rules={[
+                  { required: true, message: "Please input the subnet mask!" },
+                ]}
+              >
+                <Input placeholder="Subnet Mask" />
               </Form.Item>
               <Form.Item
                 label="MAC Address"

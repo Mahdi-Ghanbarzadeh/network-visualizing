@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Graph from "./Graph";
 import Sidebar from "./Sidebar";
-import data from "./../../data/data.json";
+import dataset from "./../../data/data.json";
 import styles from "./NetworkGraph.module.css";
 import {
   width,
@@ -19,6 +19,10 @@ import {
 } from "../../config";
 
 const NetworkGraph = ({ fullScreenHandle }) => {
+  console.log("dataset");
+  console.log(dataset);
+  const [data, setData] = useState(dataset);
+
   const [defaultForceProperties, setDefaultForceProperties] =
     useState(force_properties);
   const [forceProperties, setForceProperties] = useState(force_properties);
@@ -41,6 +45,38 @@ const NetworkGraph = ({ fullScreenHandle }) => {
 
   const [zoomPanning, setZoomPanning] = useState(zoom_panning_availability);
 
+  function calculateLAN(ip, subnetMask) {
+    const ipParts = ip.split(".").map(Number);
+    const subnetMaskParts = subnetMask.split(".").map(Number);
+
+    const networkAddressParts = ipParts.map(
+      (ipPart, index) => ipPart & subnetMaskParts[index]
+    );
+
+    const networkAddress = networkAddressParts.join(".");
+
+    return networkAddress;
+  }
+
+  const lans = {};
+
+  console.log("NetworkGraph component runs");
+
+  data.nodes.forEach((node) => {
+    if (node.ip_address && node.subnet_mask) {
+      const networkAddress = calculateLAN(node.ip_address, node.subnet_mask);
+      console.log(networkAddress);
+      if (!lans[networkAddress]) {
+        lans[networkAddress] = Object.keys(lans).length + 1; // Assign a distinct LAN number
+      }
+      node.lan_number = lans[networkAddress];
+    }
+  });
+
+  console.log(lans);
+  console.log(data);
+  console.log(data.nodes);
+
   return (
     <div className={styles.layout}>
       <Graph
@@ -56,7 +92,8 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         zoom_scale={zoom_scale}
         force_properties={forceProperties}
         default_force_properties={defaultForceProperties}
-        dataset={data}
+        data={data}
+        setData={setData}
         device_types={device_types}
         fullScreenHandle={fullScreenHandle}
       />

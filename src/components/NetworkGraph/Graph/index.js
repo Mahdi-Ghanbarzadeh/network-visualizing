@@ -20,13 +20,14 @@ const GraphVisualization = ({
   zoom_scale,
   force_properties,
   default_force_properties,
-  dataset,
+  data,
+  setData,
   device_types,
   fullScreenHandle,
 }) => {
-  const [data, setData] = useState(dataset);
+  // const [data, setData] = useState(dataset);
   const [highlightedNodes, setHighlightedNodes] = useState(
-    new Set(["modem1", "switch1", "server2"])
+    new Set(["switch1", "phone2", "computer3"])
   );
 
   console.log("--- data ---");
@@ -65,6 +66,8 @@ const GraphVisualization = ({
 
   const zoomRef = useRef();
   const svgRef = useRef();
+
+  const lan_colors = ["#3498db", "#2ecc71", "#9b59b6", "#e67e22", "#1abc9c"];
 
   // Convert the device_types array to an object
   const deviceTypeIcons = {};
@@ -270,9 +273,9 @@ const GraphVisualization = ({
           .style("opacity", 1)
           .style("filter", "none")
           .select("circle")
-          .style("fill", (node) =>
-            siblingNodes.includes(node) ? "steelblue" : "steelblue"
-          )
+          // .style("fill", (node) =>
+          //   siblingNodes.includes(node) ? "steelblue" : "steelblue"
+          // )
           .style("stroke", (node) =>
             siblingNodes.includes(node) ? "#ddd" : "#bbb"
           )
@@ -406,9 +409,9 @@ const GraphVisualization = ({
           .style("opacity", 1)
           .style("filter", "none")
           .select("circle")
-          .style("fill", (node) =>
-            node === clickedNode ? "steelblue" : "steelblue"
-          )
+          // .style("fill", (node) =>
+          //   node === clickedNode ? "steelblue" : "steelblue"
+          // )
           .style("stroke", (node) => (node === clickedNode ? "#ddd" : "#bbb"))
           .style("stroke-width", (node) => (node === clickedNode ? 3.5 : 2));
 
@@ -480,7 +483,9 @@ const GraphVisualization = ({
     nodeRef.current
       .append("circle")
       .attr("r", node_radius)
-      .style("fill", "steelblue")
+      .style("fill", (d) =>
+        d.lan_number ? lan_colors[d.lan_number] : "steelblue"
+      )
       .style("stroke", "#bbb")
       .style("stroke-width", 1)
       .attr("class", (d) =>
@@ -525,7 +530,7 @@ const GraphVisualization = ({
       .attr("y", -node_radius - 8) // Position the text above the node
       .style("font-size", "12px")
       .style("fill", "#fff")
-      .text((d) => (node_label_visibility ? d.ip_address : ""))
+      .text((d) => (node_label_visibility ? d.label : ""))
       .attr("draggable", "false")
       .style("pointer-events", "none")
       .style("user-select", "none"); // Prevent text selection
@@ -610,7 +615,9 @@ const GraphVisualization = ({
       .style("opacity", 1)
       .style("filter", "none")
       .select("circle")
-      .style("fill", "steelblue")
+      .style("fill", (d) =>
+        d.lan_number ? lan_colors[d.lan_number] : "steelblue"
+      )
       .style("stroke", "#bbb")
       .style("stroke-width", 1);
 
@@ -917,9 +924,7 @@ const GraphVisualization = ({
   useEffect(() => {
     linkLabelsRef.current.text((d) => (edge_label_visibility ? d.label : ""));
 
-    nodeLabelsRef.current.text((d) =>
-      node_label_visibility ? d.ip_address : ""
-    );
+    nodeLabelsRef.current.text((d) => (node_label_visibility ? d.label : ""));
   }, [node_label_visibility, edge_label_visibility]);
 
   // Use useEffect hook to update the show traffic flow
@@ -1006,7 +1011,6 @@ const GraphVisualization = ({
       });
     });
   };
-
   // Function to update the simulation forces with new force_properties
   const updateForces = () => {
     if (!simulationRef.current) return;
@@ -1201,7 +1205,9 @@ const GraphVisualization = ({
         data={data}
         setData={setData}
         clickedNodeData={rightClickedNodeData}
+        setClickedNodeData={setRightClickedNodeData}
         clickedEdgeData={rightClickedEdgeData}
+        setClickedEdgeData={setRightClickedEdgeData}
         confirmDeleteAction={confirmDeleteAction}
         currentMenuContext={currentMenuContext}
       />

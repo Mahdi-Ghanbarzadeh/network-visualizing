@@ -113,7 +113,14 @@ const Sidebar = ({
                     onDragStart={(event) =>
                       handleDragStart(event, {
                         id: guidGenerator(),
+                        label: "",
                         device_type: iconInfo.device_type,
+                        model: "",
+                        manufacturer: "",
+                        serial_number: "",
+                        ip_address: "",
+                        subnet_mask: "",
+                        mac_address: "", // this empty object added to handle edit form correctly,
                       })
                     }
                   >
