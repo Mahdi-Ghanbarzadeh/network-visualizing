@@ -1,7 +1,8 @@
 import React, { useState, useRef } from "react";
 import styles from "./ContextMenu.module.css";
-import { Modal, Button, Input, Form, InputNumber } from "antd"; // Import Modal and Form from Ant Design
-import data from "./../../../../data/data.json";
+import { Modal, Button, Input, Form, InputNumber, Select } from "antd";
+
+const { Option } = Select;
 
 function ContextMenu({
   visible,
@@ -17,33 +18,68 @@ function ContextMenu({
   setContextMenuVisible,
   confirmDeleteAction,
   currentMenuContext,
+  deleteAvailable,
+  device_types,
 }) {
-  console.log("ContextMenu component");
-  console.log("clickedNodeData");
-  console.log(clickedNodeData);
+  const deviceTypeValues = device_types.map((device) => device.device_type);
+
+  const subnetMaskRanges = [
+    { label: "/32 - 1 IP", value: "255.255.255.255" },
+    { label: "/31 - 2 IPs", value: "255.255.255.254" },
+    { label: "/30 - 4 IPs", value: "255.255.255.252" },
+    { label: "/29 - 8 IPs", value: "255.255.255.248" },
+    { label: "/28 - 16 IPs", value: "255.255.255.240" },
+    { label: "/27 - 32 IPs", value: "255.255.255.224" },
+    { label: "/26 - 64 IPs", value: "255.255.255.192" },
+    { label: "/25 - 128 IPs", value: "255.255.255.128" },
+    { label: "/24 - 256 IPs", value: "255.255.255.0" },
+    { label: "/23 - 512 IPs", value: "255.255.254.0" },
+    { label: "/22 - 1,024 IPs", value: "255.255.252.0" },
+    { label: "/21 - 2,048 IPs", value: "255.255.248.0" },
+    { label: "/20 - 4,096 IPs", value: "255.255.240.0" },
+    { label: "/19 - 8,192 IPs", value: "255.255.224.0" },
+    { label: "/18 - 16,384 IPs", value: "255.255.192.0" },
+    { label: "/17 - 32,768 IPs", value: "255.255.128.0" },
+    { label: "/16 - 65,536 IPs", value: "255.255.0.0" },
+    { label: "/15 - 131,072 IPs", value: "255.254.0.0" },
+    { label: "/14 - 262,144 IPs", value: "255.252.0.0" },
+    { label: "/13 - 524,288 IPs", value: "255.248.0.0" },
+    { label: "/12 - 1,048,576 IPs", value: "255.240.0.0" },
+    { label: "/11 - 2,097,152 IPs", value: "255.224.0.0" },
+    { label: "/10 - 4,194,304 IPs", value: "255.192.0.0" },
+    { label: "/9 - 8,388,608 IPs", value: "255.128.0.0" },
+    { label: "/8 - 16,777,216 IPs", value: "255.0.0.0" },
+    { label: "/7 - 33,554,432 IPs", value: "254.0.0.0" },
+    { label: "/6 - 67,108,864 IPs", value: "252.0.0.0" },
+    { label: "/5 - 134,217,728 IPs", value: "248.0.0.0" },
+    { label: "/4 - 268,435,456 IPs", value: "240.0.0.0" },
+    { label: "/3 - 536,870,912 IPs", value: "224.0.0.0" },
+    { label: "/2 - 1,073,741,824 IPs", value: "192.0.0.0" },
+    { label: "/1 - 2,147,483,648 IPs", value: "128.0.0.0" },
+  ];
+
   // variables related to "node" context menu
   const [nodeInformationModalVisibility, setNodeInformationModalVisibility] =
     useState(false);
   const [nodeEditModalVisibility, setNodeEditModalVisibility] = useState(false);
-  const [nodeForm] = Form.useForm(); // Create a form instance for editing node
+  const [nodeForm] = Form.useForm();
 
   // variables related to "edge" context menu
   const [edgeInformationModalVisibility, setEdgeInformationModalVisibility] =
     useState(false);
   const [edgeEditModalVisibility, setEdgeEditModalVisibility] = useState(false);
-  const [edgeForm] = Form.useForm(); // Create a form instance for editing edge
+  const [edgeForm] = Form.useForm();
 
   const handleOptionClick = (option) => {
     if (currentMenuContext === "Node") {
       console.log("node options");
       if (option.label === "Show Information") {
+        deleteAvailable.current = false;
         if (clickedNodeData) {
           setNodeInformationModalVisibility(true);
         }
       } else if (option.label === "Edit Information") {
-        console.log("clickedNodeData in if");
-        console.log(clickedNodeData);
-        console.log(nodeForm.getFieldValue());
+        deleteAvailable.current = false;
         nodeForm.setFieldsValue(clickedNodeData);
         setNodeEditModalVisibility(true);
       } else if (option.label === "Collapse / Expand") {
@@ -56,10 +92,12 @@ function ContextMenu({
     } else if (currentMenuContext === "Edge") {
       console.log("edge options");
       if (option.label === "Show Information") {
+        deleteAvailable.current = false;
         if (clickedEdgeData) {
           setEdgeInformationModalVisibility(true);
         }
       } else if (option.label === "Edit Information") {
+        deleteAvailable.current = false;
         edgeForm.setFieldsValue(clickedEdgeData);
         setEdgeEditModalVisibility(true);
       } else if (option.label === "Delete Edge") {
@@ -71,6 +109,8 @@ function ContextMenu({
   };
 
   const handleNodeEditFormSubmit = (values) => {
+    console.log("---values---");
+    console.log(values);
     // Find the index of the clicked node
     const clickedNodeIndex = data.nodes.findIndex(
       (node) => node.id === clickedNodeData.id
@@ -128,6 +168,7 @@ function ContextMenu({
       });
 
       setNodeEditModalVisibility(false);
+      deleteAvailable.current = true;
     }
   };
 
@@ -177,6 +218,7 @@ function ContextMenu({
         });
 
         setEdgeEditModalVisibility(false);
+        deleteAvailable.current = true;
       }
     }
   };
@@ -191,30 +233,7 @@ function ContextMenu({
     );
   };
 
-  // const handleEdgeEditFormSubmit = (values) => {
-  //   console.log("Submitting edited edge data:", values);
-
-  //   // Assuming you have a way to update the data with the edited edge information
-  //   // Update the data with the edited edge information
-  //   const updatedEdges = data.edges.map((edge) =>
-  //     edge.index === clickedEdgeData.index ? { ...edge, ...values } : edge
-  //   );
-
-  //   console.log("updatedEdges");
-  //   console.log(updatedEdges);
-
-  //   // Update the data state with the updated edges
-  //   setData((prevData) => ({
-  //     nodes: [...data.nodes.filter((node) => node === null), ...data.nodes],
-  //     edges: updatedEdges,
-  //   }));
-
-  //   // Close the modal
-  //   setEdgeEditModalVisibility(false);
-  // };
-
   const handleCancelEditInformation = () => {
-    console.log("run handleCancelEditInformation");
     setNodeEditModalVisibility(false);
     setEdgeEditModalVisibility(false);
 
@@ -224,6 +243,30 @@ function ContextMenu({
 
     nodeForm.resetFields();
     edgeForm.resetFields();
+
+    deleteAvailable.current = true;
+  };
+
+  // Regular expression to match a valid IP address pattern
+  const validateIPAddress = (_, value) => {
+    const ipRegex = /^(?:\d{1,3}\.){3}\d{1,3}$/;
+
+    if (value && !ipRegex.test(value)) {
+      return Promise.reject("Please enter a valid IP address");
+    }
+
+    return Promise.resolve();
+  };
+
+  // Regular expression to match a valid MAC address pattern
+  const validateMACAddress = (_, value) => {
+    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+
+    if (value && !macRegex.test(value)) {
+      return Promise.reject("Please enter a valid MAC address");
+    }
+
+    return Promise.resolve();
   };
 
   return (
@@ -252,6 +295,7 @@ function ContextMenu({
         open={nodeInformationModalVisibility}
         onCancel={() => {
           setNodeInformationModalVisibility(false);
+          deleteAvailable.current = true;
         }}
         footer={null}
       >
@@ -263,8 +307,8 @@ function ContextMenu({
             <p>Manufacturer: {clickedNodeData.manufacturer}</p>
             <p>Serial Number: {clickedNodeData.serial_number}</p>
             <p>IP Address: {clickedNodeData.ip_address}</p>
+            <p>Subnet Mask: {clickedNodeData.subnet_mask}</p>
             <p>MAC Address: {clickedNodeData.mac_address}</p>
-            <p>Group Number: {clickedNodeData.group_number}</p>
           </div>
         )}
       </Modal>
@@ -289,7 +333,6 @@ function ContextMenu({
           </Button>,
         ]}
       >
-        {console.log(clickedNodeData)}
         {clickedNodeData && (
           <Form
             form={nodeForm}
@@ -304,44 +347,55 @@ function ContextMenu({
                   { required: true, message: "Please input the device type!" },
                 ]}
               >
-                <Input placeholder="Device Type" />
+                <Select
+                  options={deviceTypeValues.map((province) => ({
+                    label: province,
+                    value: province,
+                  }))}
+                />
               </Form.Item>
               <Form.Item
                 label="Model"
                 name="model"
-                rules={[{ required: true, message: "Please input the model!" }]}
+                rules={[
+                  { required: false, message: "Please input the model!" },
+                ]}
               >
-                <Input placeholder="Model" />
+                <Input />
               </Form.Item>
               <Form.Item
                 label="Manufacturer"
                 name="manufacturer"
                 rules={[
-                  { required: true, message: "Please input the manufacturer!" },
+                  {
+                    required: false,
+                    message: "Please input the manufacturer!",
+                  },
                 ]}
               >
-                <Input placeholder="Manufacturer" />
+                <Input />
               </Form.Item>
               <Form.Item
                 label="Serial Number"
                 name="serial_number"
                 rules={[
                   {
-                    required: true,
+                    required: false,
                     message: "Please input the serial number!",
                   },
                 ]}
               >
-                <Input placeholder="Serial Number" />
+                <Input />
               </Form.Item>
               <Form.Item
                 label="IP Address"
                 name="ip_address"
                 rules={[
                   { required: true, message: "Please input the IP address!" },
+                  { validator: validateIPAddress },
                 ]}
               >
-                <Input placeholder="IP Address" />
+                <Input placeholder="192.168.1.1" />
               </Form.Item>
               <Form.Item
                 label="Subnet Mask"
@@ -350,16 +404,22 @@ function ContextMenu({
                   { required: true, message: "Please input the subnet mask!" },
                 ]}
               >
-                <Input placeholder="Subnet Mask" />
+                <Select
+                  options={subnetMaskRanges.map((range) => ({
+                    label: range.label,
+                    value: range.value,
+                  }))}
+                />
               </Form.Item>
               <Form.Item
                 label="MAC Address"
                 name="mac_address"
                 rules={[
                   { required: true, message: "Please input the MAC address!" },
+                  { validator: validateMACAddress },
                 ]}
               >
-                <Input placeholder="MAC Address" />
+                <Input placeholder="A1:B2:C3:D4:E5:F6" />
               </Form.Item>
             </div>
           </Form>
@@ -374,7 +434,6 @@ function ContextMenu({
         }}
         footer={null}
       >
-        {console.log(clickedEdgeData)}
         {clickedEdgeData && (
           <div>
             <p>Source: {clickedEdgeData.source.id}</p>
@@ -405,7 +464,6 @@ function ContextMenu({
           </Button>,
         ]}
       >
-        {console.log(clickedEdgeData)}
         {clickedEdgeData && (
           <Form
             form={edgeForm}
@@ -420,7 +478,7 @@ function ContextMenu({
                   { required: true, message: "Please input the source!" },
                 ]}
               >
-                <Input placeholder="Source" />
+                <Input />
               </Form.Item>
               <Form.Item
                 label="Target"
@@ -429,21 +487,23 @@ function ContextMenu({
                   { required: true, message: "Please input the target!" },
                 ]}
               >
-                <Input placeholder="Target" />
+                <Input />
               </Form.Item>
               <Form.Item
                 label="Label"
                 name="label"
-                rules={[{ required: true, message: "Please input the label!" }]}
+                rules={[
+                  { required: false, message: "Please input the label!" },
+                ]}
               >
-                <Input placeholder="Label" />
+                <Input />
               </Form.Item>
               <Form.Item
                 label="Flow"
                 name="flow"
-                rules={[{ required: true, message: "Please input the flow!" }]}
+                rules={[{ required: false, message: "Please input the flow!" }]}
               >
-                <InputNumber placeholder="Flow" />
+                <InputNumber />
               </Form.Item>
             </div>
           </Form>

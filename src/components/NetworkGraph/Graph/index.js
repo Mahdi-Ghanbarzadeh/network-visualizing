@@ -48,6 +48,9 @@ const GraphVisualization = ({
   const clickedEdgeRef = useRef(null);
   const clickedNodeRef = useRef(null);
 
+  // variable to determine permission in order to delete node or edge
+  const deleteAvailable = useRef(true);
+
   // Create a ref to store the simulation, link, linkLabels and node instance
   const simulationRef = useRef(null);
   const linkRef = useRef();
@@ -603,7 +606,11 @@ const GraphVisualization = ({
     const deletedNode = clickedNodeRef.current;
 
     if (isBackspaceOrDelete) {
-      if (deletedEdge !== null || deletedNode !== null) {
+      if (
+        (deletedEdge !== null || deletedNode !== null) &&
+        deleteAvailable.current
+      ) {
+        console.log("isBackspaceOrDelete runs");
         confirmDeleteAction(deletedEdge, deletedNode);
       }
     }
@@ -1210,6 +1217,8 @@ const GraphVisualization = ({
         setClickedEdgeData={setRightClickedEdgeData}
         confirmDeleteAction={confirmDeleteAction}
         currentMenuContext={currentMenuContext}
+        deleteAvailable={deleteAvailable}
+        device_types={device_types}
       />
     </div>
   );

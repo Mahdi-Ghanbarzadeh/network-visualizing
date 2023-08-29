@@ -9,8 +9,7 @@
       "serial_number": "CP12345",
       "ip_address": "192.168.1.15",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "A1:B2:C3:D4:E5:F6",
-      "group_number": 1
+      "mac_address": "A1:B2:C3:D4:E5:F6"
     },
     {
       "id": "laptop1",
@@ -21,8 +20,7 @@
       "serial_number": "LT67890",
       "ip_address": "192.168.1.16",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "11:22:33:44:55:66",
-      "group_number": 1
+      "mac_address": "11:22:33:44:55:66"
     },
     {
       "id": "phone1",
@@ -33,8 +31,7 @@
       "serial_number": "PH98765",
       "ip_address": "192.168.1.17",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "AA:BB:CC:DD:EE:FF",
-      "group_number": 1
+      "mac_address": "AA:BB:CC:DD:EE:FF"
     },
     {
       "id": "printer1",
@@ -45,8 +42,7 @@
       "serial_number": "PR54321",
       "ip_address": "192.168.1.18",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "12:34:56:78:90:AB",
-      "group_number": 1
+      "mac_address": "12:34:56:78:90:AB"
     },
     {
       "id": "switch1",
@@ -57,8 +53,7 @@
       "serial_number": "SW22222",
       "ip_address": "",
       "subnet_mask": "",
-      "mac_address": "XY:ZZ:WW:QQ:RR:SS",
-      "group_number": 1
+      "mac_address": "XY:ZZ:WW:QQ:RR:SS"
     },
     {
       "id": "switch3",
@@ -69,8 +64,7 @@
       "serial_number": "SW22222",
       "ip_address": "",
       "subnet_mask": "",
-      "mac_address": "XY:ZZ:WW:QQ:RR:SS",
-      "group_number": 1
+      "mac_address": "XY:ZZ:WW:QQ:RR:SS"
     },
     {
       "id": "router1",
@@ -81,8 +75,7 @@
       "serial_number": "RT44444",
       "ip_address": "",
       "subnet_mask": "",
-      "mac_address": "11:22:33:44:55:66",
-      "group_number": 2
+      "mac_address": "11:22:33:44:55:66"
     },
     {
       "id": "firewall1",
@@ -93,8 +86,7 @@
       "serial_number": "FW55555",
       "ip_address": "",
       "subnet_mask": "",
-      "mac_address": "CC:DD:EE:FF:AA:BB",
-      "group_number": 2
+      "mac_address": "CC:DD:EE:FF:AA:BB"
     },
     {
       "id": "internet1",
@@ -105,8 +97,7 @@
       "serial_number": "ISP66666",
       "ip_address": "",
       "subnet_mask": "",
-      "mac_address": "CC:01:EE:12:AA:33",
-      "group_number": 2
+      "mac_address": "CC:01:EE:12:AA:33"
     },
     {
       "id": "computer2",
@@ -117,8 +108,7 @@
       "serial_number": "CP67890",
       "ip_address": "192.168.1.74",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "AB:CD:EF:01:23:45",
-      "group_number": 2
+      "mac_address": "AB:CD:EF:01:23:45"
     },
     {
       "id": "laptop2",
@@ -129,8 +119,7 @@
       "serial_number": "LT23456",
       "ip_address": "192.168.1.75",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "12:34:56:78:90:12",
-      "group_number": 2
+      "mac_address": "12:34:56:78:90:12"
     },
     {
       "id": "phone2",
@@ -141,8 +130,7 @@
       "serial_number": "PH45678",
       "ip_address": "192.168.1.76",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "FF:AA:BB:CC:DD:EE",
-      "group_number": 3
+      "mac_address": "FF:AA:BB:CC:DD:EE"
     },
     {
       "id": "printer2",
@@ -153,8 +141,7 @@
       "serial_number": "PR09876",
       "ip_address": "192.168.1.77",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "11:22:33:44:55:66",
-      "group_number": 3
+      "mac_address": "11:22:33:44:55:66"
     },
     {
       "id": "switch2",
@@ -165,8 +152,7 @@
       "serial_number": "SW33333",
       "ip_address": "",
       "subnet_mask": "",
-      "mac_address": "CC:DD:EE:FF:AA:BB",
-      "group_number": 3
+      "mac_address": "CC:DD:EE:FF:AA:BB"
     },
     {
       "id": "computer3",
@@ -177,8 +163,7 @@
       "serial_number": "CP67890",
       "ip_address": "192.168.1.133",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "AB:CD:EF:01:23:45",
-      "group_number": 2
+      "mac_address": "AB:CD:EF:01:23:45"
     },
     {
       "id": "laptop3",
@@ -189,8 +174,7 @@
       "serial_number": "LT23456",
       "ip_address": "192.168.1.132",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "12:34:56:78:90:12",
-      "group_number": 2
+      "mac_address": "12:34:56:78:90:12"
     },
     {
       "id": "phone3",
@@ -201,8 +185,7 @@
       "serial_number": "PH45678",
       "ip_address": "192.168.1.131",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "FF:AA:BB:CC:DD:EE",
-      "group_number": 3
+      "mac_address": "FF:AA:BB:CC:DD:EE"
     },
     {
       "id": "printer3",
@@ -213,8 +196,7 @@
       "serial_number": "PR09876",
       "ip_address": "192.168.1.134",
       "subnet_mask": "255.255.255.192",
-      "mac_address": "11:22:33:44:55:66",
-      "group_number": 3
+      "mac_address": "11:22:33:44:55:66"
     }
   ],
   "edges": [
