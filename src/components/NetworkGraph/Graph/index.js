@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import styles from "./Graph.module.css";
 import Menu from "./Menu";
+import { Modal } from "antd";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 
 import domtoimage from "dom-to-image";
 import { saveAs } from "file-saver";
@@ -33,6 +35,20 @@ const GraphVisualization = ({
   console.log("--- data ---");
   console.log(data);
 
+  // modal confirm deletion
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const openModal = () => {
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
+  // variable to determine permission in order to delete node or edge
+  const deleteAvailable = useRef(true);
+
   // draw edge
   const [isDrawingEdge, setIsDrawingEdge] = useState(false);
   const [drawingStartNode, setDrawingStartNode] = useState(null);
@@ -47,9 +63,6 @@ const GraphVisualization = ({
   // variable to keep track of clicked node and edge in order to reset styles
   const clickedEdgeRef = useRef(null);
   const clickedNodeRef = useRef(null);
-
-  // variable to determine permission in order to delete node or edge
-  const deleteAvailable = useRef(true);
 
   // Create a ref to store the simulation, link, linkLabels and node instance
   const simulationRef = useRef(null);
@@ -366,6 +379,9 @@ const GraphVisualization = ({
       .on("click", nodeHandleClick)
       .on("contextmenu", nodeContextMenuHandler);
 
+    // g.selectAll("g").append("div");
+    // nodeRef.current.append("div");
+
     function nodeContextMenuHandler(event, node) {
       event.preventDefault();
       setContextMenuPosition({ x: event.clientX, y: event.clientY });
@@ -554,7 +570,21 @@ const GraphVisualization = ({
         // Position the tooltip
         tooltip
           .html(
-            `<strong>Device Type:</strong> ${d.device_type}<br/><strong>Model:</strong> ${d.model}<br/><strong>Manufacturer:</strong> ${d.manufacturer}<br/><strong>Serial Number:</strong> ${d.serial_number}<br/><strong>IP:</strong> ${d.ip_address}<br/><strong>MAC:</strong> ${d.mac_address}`
+            `<strong>Device Type:</strong> ${
+              d.device_type
+            }<br/><strong>Model:</strong> ${d.model}<br/>${
+              d.ip_address !== ""
+                ? `<strong>IP:</strong> ${d.ip_address}<br/>`
+                : ""
+            }${
+              d.subnet_mask !== ""
+                ? `<strong>Subnet Mask:</strong> ${d.subnet_mask}<br/>`
+                : ""
+            }${
+              d.subnet_mask !== ""
+                ? `<strong>Network Address:</strong> ${d.network_address}<br/>`
+                : ""
+            }<strong>MAC:</strong> ${d.mac_address}`
           )
           .style("left", event.pageX + 10 + "px")
           .style("top", event.pageY - 28 + "px");
@@ -606,12 +636,10 @@ const GraphVisualization = ({
     const deletedNode = clickedNodeRef.current;
 
     if (isBackspaceOrDelete) {
-      if (
-        (deletedEdge !== null || deletedNode !== null) &&
-        deleteAvailable.current
-      ) {
+      if (deletedEdge !== null || deletedNode !== null) {
         console.log("isBackspaceOrDelete runs");
-        confirmDeleteAction(deletedEdge, deletedNode);
+        // run Modal
+        openModal();
       }
     }
   }
@@ -646,7 +674,18 @@ const GraphVisualization = ({
     clickedNodeRef.current = null;
   }
 
-  function confirmDeleteAction(deletedEdge, deletedNode) {
+  function confirmDeleteActionModal() {
+    console.log("run handle ok");
+
+    if (deleteAvailable.current) confirmDeleteAction();
+
+    closeModal();
+  }
+
+  function confirmDeleteAction(
+    deletedEdge = clickedEdgeRef.current,
+    deletedNode = clickedNodeRef.current
+  ) {
     if (deletedEdge !== null) {
       // Remove the clicked edge from data
       setData((prevData) => ({
@@ -1173,6 +1212,34 @@ const GraphVisualization = ({
         <svg ref={graphRef}>
           {/* Create a container for the graph elements */}
         </svg>
+
+        <Modal
+          title="Are you sure?"
+          open={modalVisible}
+          // handleOk={}
+          onOk={confirmDeleteActionModal}
+          onCancel={closeModal}
+          icon={<ExclamationCircleOutlined />}
+          width={400}
+        >
+          {/* {clickedNodeRef.current && (
+            <div>
+              <p>ID: {clickedNodeRef.current.id}</p>
+              <p>Device Type: {clickedNodeRef.current.device_type}</p>
+              <p>Model: {clickedNodeRef.current.model}</p>
+              <p>IP Address: {clickedNodeRef.current.ip_address}</p>
+              <p>MAC Address: {clickedNodeRef.current.mac_address}</p>
+            </div>
+          )}
+          {clickedEdgeRef.current && (
+            <div>
+              <p>Source: {clickedEdgeRef.current.source.id}</p>
+              <p>Target: {clickedEdgeRef.current.target.id}</p>
+              <p>Label: {clickedEdgeRef.current.label}</p>
+              <p>Flow: {clickedEdgeRef.current.flow}</p>
+            </div>
+          )} */}
+        </Modal>
       </div>
 
       <ContextMenu

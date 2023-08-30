@@ -70,6 +70,23 @@ function ContextMenu({
   const [edgeEditModalVisibility, setEdgeEditModalVisibility] = useState(false);
   const [edgeForm] = Form.useForm();
 
+  const [sourceOptions, setSourceOptions] = useState(data.nodes);
+  const [targetOptions, setTargetOptions] = useState(data.nodes);
+
+  function handleOptions() {
+    setSourceOptions(
+      data.nodes.filter(
+        (node) => node.id !== edgeForm.getFieldValue(["target", "id"])
+      )
+    );
+
+    setTargetOptions(
+      data.nodes.filter(
+        (node) => node.id !== edgeForm.getFieldValue(["source", "id"])
+      )
+    );
+  }
+
   const handleOptionClick = (option) => {
     if (currentMenuContext === "Node") {
       console.log("node options");
@@ -478,7 +495,19 @@ function ContextMenu({
                   { required: true, message: "Please input the source!" },
                 ]}
               >
-                <Input />
+                <Select onChange={handleOptions}>
+                  {sourceOptions
+                    .filter(
+                      (node) =>
+                        node.id !== edgeForm.getFieldValue(["target", "id"])
+                    )
+                    .map((node) => (
+                      <Select.Option key={node.id} value={node.id}>
+                        ID: {node.id} - IP: {node.ip_address} - MAC:{" "}
+                        {node.mac_address}
+                      </Select.Option>
+                    ))}
+                </Select>
               </Form.Item>
               <Form.Item
                 label="Target"
@@ -487,7 +516,19 @@ function ContextMenu({
                   { required: true, message: "Please input the target!" },
                 ]}
               >
-                <Input />
+                <Select onChange={handleOptions}>
+                  {targetOptions
+                    .filter(
+                      (node) =>
+                        node.id !== edgeForm.getFieldValue(["source", "id"])
+                    )
+                    .map((node) => (
+                      <Select.Option key={node.id} value={node.id}>
+                        ID: {node.id} - IP: {node.ip_address} - MAC:{" "}
+                        {node.mac_address}
+                      </Select.Option>
+                    ))}
+                </Select>
               </Form.Item>
               <Form.Item
                 label="Label"

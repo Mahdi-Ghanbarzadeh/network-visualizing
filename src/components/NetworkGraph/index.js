@@ -60,8 +60,6 @@ const NetworkGraph = ({ fullScreenHandle }) => {
 
   const lans = {};
 
-  console.log("NetworkGraph component runs");
-
   data.nodes.forEach((node) => {
     if (node.ip_address && node.subnet_mask) {
       const networkAddress = calculateLAN(node.ip_address, node.subnet_mask);
@@ -70,6 +68,7 @@ const NetworkGraph = ({ fullScreenHandle }) => {
         lans[networkAddress] = Object.keys(lans).length + 1; // Assign a distinct LAN number
       }
       node.lan_number = lans[networkAddress];
+      node.network_address = networkAddress;
     }
   });
 
