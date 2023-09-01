@@ -89,7 +89,7 @@ const Sidebar = ({
         <Collapse
           size="large"
           defaultActiveKey={["simulation"]}
-          // defaultActiveKey={["representation", "filter", "style"]}
+          // defaultActiveKey={["presentation", "filter", "style"]}
           style={{
             minHeight: "calc(100vh - 5rem)",
             maxHeight: "calc(100vh - 5rem)",
@@ -99,9 +99,9 @@ const Sidebar = ({
           <Panel header="Network Simulation" key="simulation">
             <div className={styles.simulation}>
               <span>
-                <b> Design Your Network: </b> Simply drag and drop the nodes
-                below onto the canvas to construct and simulate your network
-                topology.
+                <b> Design Your Network </b>
+                <br /> Simply drag and drop the nodes below onto the canvas to
+                construct and simulate your network topology.
               </span>
 
               <div className={styles.node_container}>
@@ -202,7 +202,7 @@ const Sidebar = ({
             </div>
           </Panel>
 
-          <Panel header="Network Representation" key="representation">
+          <Panel header="Network Presentation" key="presentation">
             <div className={styles.section}>
               <div className={styles.panel}>
                 <span>

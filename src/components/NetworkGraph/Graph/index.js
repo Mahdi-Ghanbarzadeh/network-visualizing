@@ -53,7 +53,6 @@ const GraphVisualization = ({
   const [isDrawingEdge, setIsDrawingEdge] = useState(false);
   const [drawingStartNode, setDrawingStartNode] = useState(null);
   const [drawingEndNode, setDrawingEndNode] = useState(null);
-  const [dragLineCoords, setDragLineCoords] = useState(null);
   const [showDragLine, setShowDragLine] = useState(false);
 
   // Create a ref to store the graph
@@ -1256,6 +1255,9 @@ const GraphVisualization = ({
                 },
                 {
                   label: "Edit Information",
+                },
+                {
+                  label: "Show Report",
                 },
                 {
                   label: "Collapse / Expand",

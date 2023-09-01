@@ -1,6 +1,18 @@
 import React, { useState, useRef } from "react";
 import styles from "./ContextMenu.module.css";
-import { Modal, Button, Input, Form, InputNumber, Select } from "antd";
+import {
+  Modal,
+  Button,
+  Input,
+  Form,
+  InputNumber,
+  Select,
+  Descriptions,
+} from "antd";
+import { ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
+
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
 
 const { Option } = Select;
 
@@ -63,6 +75,150 @@ function ContextMenu({
     useState(false);
   const [nodeEditModalVisibility, setNodeEditModalVisibility] = useState(false);
   const [nodeForm] = Form.useForm();
+  const [nodeReportModalVisibility, setNodeReportModalVisibility] =
+    useState(false);
+
+  // Generate sample attack data
+  const generateAttackData = () => {
+    const timestamps = Array.from(
+      { length: 10 },
+      (_, i) => new Date().getTime() - i * 1000
+    );
+    const attackData = timestamps.map((timestamp) => ({
+      x: timestamp,
+      y: Math.random() * 50 + 50, // Random values between 50 and 100 for attack
+    }));
+    return attackData;
+  };
+
+  // Generate sample data for graphs
+  const attackData = generateAttackData();
+
+  const attackOptions = {
+    title: {
+      text: "Attack Data",
+    },
+    xAxis: {
+      type: "datetime",
+    },
+    yAxis: {
+      title: {
+        text: "Value",
+      },
+    },
+    series: [
+      {
+        name: "Attack Data",
+        data: attackData.map((dataPoint) => [dataPoint.x, dataPoint.y]),
+      },
+    ],
+  };
+
+  const columnRotatedLabelsOptions = {
+    chart: {
+      type: "column",
+    },
+    title: {
+      text: "History of Attacks",
+    },
+    xAxis: {
+      categories: ["computer3", "laptop3", "phone1", "computer2", "laptop2"],
+      labels: {
+        rotation: -45,
+        style: {
+          fontSize: "12px",
+          fontFamily: "Arial, sans-serif",
+        },
+      },
+    },
+    yAxis: {
+      min: 0,
+      title: {
+        text: "Attacks",
+      },
+    },
+    legend: {
+      enabled: false,
+    },
+    tooltip: {
+      pointFormat: "Attacks: <b>{point.y}</b>",
+    },
+    series: [
+      {
+        name: "Attacks",
+        data: [5, 8, 12, 3, 10],
+        color: "#FF6347",
+      },
+    ],
+  };
+
+  const deviceData = {
+    id: "phone2",
+    attacks: [
+      {
+        name: "Malware",
+        y: 25,
+      },
+      {
+        name: "DDoS",
+        y: 15,
+      },
+      {
+        name: "Phishing",
+        y: 10,
+      },
+      {
+        name: "SQL Injection",
+        y: 8,
+      },
+      {
+        name: "Brute Force",
+        y: 12,
+      },
+      {
+        name: "Ransomware",
+        y: 7,
+      },
+      {
+        name: "Man-in-the-Middle",
+        y: 6,
+      },
+      // Add more attack types and their corresponding percentages
+    ],
+  };
+  const { id, attacks } = deviceData;
+
+  const pieChartOptions = {
+    chart: {
+      type: "pie",
+    },
+    title: {
+      text: `Network Attacks Distribution - Device: ${id}`,
+    },
+    tooltip: {
+      pointFormat: "<b>{point.percentage:.1f}%</b>",
+    },
+    plotOptions: {
+      pie: {
+        allowPointSelect: true,
+        cursor: "pointer",
+        dataLabels: {
+          enabled: true,
+          format: "<b>{point.name}</b>: {point.percentage:.1f} %",
+          style: {
+            color: "black",
+          },
+        },
+      },
+    },
+    series: [
+      {
+        name: "Attack Types",
+        colorByPoint: true,
+        data: attacks,
+      },
+    ],
+  };
 
   // variables related to "edge" context menu
   const [edgeInformationModalVisibility, setEdgeInformationModalVisibility] =
@@ -99,6 +255,9 @@ function ContextMenu({
         deleteAvailable.current = false;
         nodeForm.setFieldsValue(clickedNodeData);
         setNodeEditModalVisibility(true);
+      } else if (option.label === "Show Report") {
+        deleteAvailable.current = false;
+        setNodeReportModalVisibility(true);
       } else if (option.label === "Collapse / Expand") {
         // Handle collapse / expand logic here
         console.log("Collapse / Expand function");
@@ -307,6 +466,7 @@ function ContextMenu({
           ))}
         </div>
       )}
+
       <Modal
         title="Node Information"
         open={nodeInformationModalVisibility}
@@ -317,16 +477,32 @@ function ContextMenu({
         footer={null}
       >
         {clickedNodeData && (
-          <div>
-            <p>ID: {clickedNodeData.id}</p>
-            <p>Device Type: {clickedNodeData.device_type}</p>
-            <p>Model: {clickedNodeData.model}</p>
-            <p>Manufacturer: {clickedNodeData.manufacturer}</p>
-            <p>Serial Number: {clickedNodeData.serial_number}</p>
-            <p>IP Address: {clickedNodeData.ip_address}</p>
-            <p>Subnet Mask: {clickedNodeData.subnet_mask}</p>
-            <p>MAC Address: {clickedNodeData.mac_address}</p>
-          </div>
+          <Descriptions column={1} bordered>
+            <Descriptions.Item label="ID">
+              {clickedNodeData.id}
+            </Descriptions.Item>
+            <Descriptions.Item label="Device Type">
+              {clickedNodeData.device_type}
+            </Descriptions.Item>
+            <Descriptions.Item label="Model">
+              {clickedNodeData.model}
+            </Descriptions.Item>
+            <Descriptions.Item label="Manufacturer">
+              {clickedNodeData.manufacturer}
+            </Descriptions.Item>
+            <Descriptions.Item label="Serial Number">
+              {clickedNodeData.serial_number}
+            </Descriptions.Item>
+            <Descriptions.Item label="IP Address">
+              {clickedNodeData.ip_address}
+            </Descriptions.Item>
+            <Descriptions.Item label="Subnet Mask">
+              {clickedNodeData.subnet_mask}
+            </Descriptions.Item>
+            <Descriptions.Item label="MAC Address">
+              {clickedNodeData.mac_address}
+            </Descriptions.Item>
+          </Descriptions>
         )}
       </Modal>
 
@@ -444,6 +620,58 @@ function ContextMenu({
       </Modal>
 
       <Modal
+        title="Show Report"
+        visible={nodeReportModalVisibility}
+        onCancel={() => {
+          setNodeReportModalVisibility(false);
+          deleteAvailable.current = true;
+        }}
+        footer={null}
+        width={1000}
+      >
+        {clickedNodeData && (
+          <div className={styles.reportContainer}>
+            <div className={styles.box}>
+              <span className={`${styles.label} ${styles.offenderLabel}`}>
+                <ExclamationCircleOutlined /> Offender
+              </span>
+              <div className={styles.value}>laptop2</div>
+              <div className={styles.ipAddress}>192.168.1.75</div>
+            </div>
+            <div className={styles.box}>
+              <span className={`${styles.label} ${styles.victimLabel}`}>
+                <UserOutlined /> Victim
+              </span>
+              <div className={styles.value}>{clickedNodeData.id}</div>
+              <div className={styles.ipAddress}>
+                {clickedNodeData.ip_address}
+              </div>
+            </div>
+            <div className={styles.chartBox}>
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={attackOptions}
+              />
+            </div>
+
+            <div className={styles.chartBox}>
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={columnRotatedLabelsOptions}
+              />
+            </div>
+
+            <div className={styles.chartBox}>
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={pieChartOptions}
+              />
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
         title="Edge Information"
         open={edgeInformationModalVisibility}
         onCancel={() => {
@@ -452,12 +680,20 @@ function ContextMenu({
         footer={null}
       >
         {clickedEdgeData && (
-          <div>
-            <p>Source: {clickedEdgeData.source.id}</p>
-            <p>Target: {clickedEdgeData.target.id}</p>
-            <p>Label: {clickedEdgeData.label}</p>
-            <p>Flow: {clickedEdgeData.flow}</p>
-          </div>
+          <Descriptions column={1} bordered>
+            <Descriptions.Item label="Source">
+              {clickedEdgeData.source.id}
+            </Descriptions.Item>
+            <Descriptions.Item label="Target">
+              {clickedEdgeData.target.id}
+            </Descriptions.Item>
+            <Descriptions.Item label="Label">
+              {clickedEdgeData.label}
+            </Descriptions.Item>
+            <Descriptions.Item label="Flow">
+              {clickedEdgeData.flow}
+            </Descriptions.Item>
+          </Descriptions>
         )}
       </Modal>
 

@@ -51,8 +51,54 @@
   margin-bottom: 10px;
 }
 
+/* Add your existing styles here */
+
+.reportContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+}
+
+.box {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  gap: 0.5rem;
+}
+
 .label {
+  font-weight: bold;
+  font-size: 18px;
   flex: 0 0 auto; /* Prevent the label from growing */
   width: 100px; /* Set a fixed width for the labels */
-  margin-right: 10px; /* Add spacing between label and input */
+  text-align: center;
+}
+
+.offenderLabel {
+  color: red; /* Change color for the offender label */
+}
+
+.value {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+}
+
+.chartBox {
+  flex: 1;
+  min-height: 300px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
