@@ -54,3 +54,42 @@
   animation: stroke 10s infinite linear;
   stroke: #49d8a1;
 }
+
+.link {
+  opacity: 0.6;
+  stroke: #ccc;
+  stroke-width: 3;
+}
+
+.animate_line {
+  stroke: #49d8a1;
+  opacity: 1;
+  fill: none;
+  stroke-width: 3;
+  z-index: 5;
+  stroke-dasharray: 25;
+  stroke-dashoffset: -110;
+  stroke-linecap: round;
+  animation-direction: reverse;
+  animation: stroke 6s infinite linear;
+}
+@keyframes stroke {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 500; /* If the reverse movement is changed to - 500 */
+  }
+}
+
+.animate_line_error {
+  fill: none;
+  stroke-width: 3;
+  z-index: 5;
+  stroke-dasharray: 10;
+  stroke-dashoffset: -110;
+  stroke-linecap: round;
+  animation-direction: reverse;
+  animation: stroke 6s infinite linear;
+  stroke: #eb2943 !important;
+}

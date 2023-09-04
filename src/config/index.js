@@ -16,8 +16,8 @@ export const node_radius = 25;
 export const zoom_panning_availability = true;
 
 // set the visibility of nodes and edges
-export const node_label_visibility = true;
-export const edge_label_visibility = true;
+export const node_label_visibility = false;
+export const edge_label_visibility = false;
 export const traffic_flow_visibility = false;
 export const vulnerability_visibility = false;
 

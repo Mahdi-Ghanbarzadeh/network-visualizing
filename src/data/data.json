@@ -201,120 +201,140 @@
   ],
   "edges": [
     {
+      "id": "1",
       "source": "computer1",
       "target": "switch1",
       "label": "",
       "flow": 100
     },
     {
+      "id": "2",
       "source": "laptop1",
       "target": "switch1",
       "label": "",
       "flow": 50
     },
     {
+      "id": "3",
       "source": "phone1",
       "target": "switch1",
       "label": "",
       "flow": 25
     },
     {
+      "id": "4",
       "source": "printer1",
       "target": "switch1",
       "label": "",
       "flow": 10
     },
     {
+      "id": "5",
       "source": "switch1",
       "target": "router1",
       "label": "192.168.1.19/26",
       "flow": 100
     },
     {
+      "id": "6",
       "source": "router1",
       "target": "firewall1",
       "label": "192.168.1.200/26",
       "flow": 100
     },
     {
+      "id": "7",
       "source": "firewall1",
       "target": "internet1",
       "label": "37.225.228.45/26",
       "flow": 100
     },
     {
+      "id": "8",
       "source": "computer2",
       "target": "laptop2",
       "label": "",
       "flow": 0
     },
     {
+      "id": "9",
       "source": "phone2",
       "target": "printer2",
       "label": "",
       "flow": 0
     },
     {
+      "id": "10",
       "source": "phone2",
       "target": "laptop2",
       "label": "",
       "flow": 0
     },
     {
+      "id": "11",
       "source": "phone2",
       "target": "computer2",
       "label": "192.168.2.78/26",
       "flow": 0
     },
     {
+      "id": "12",
       "source": "printer2",
       "target": "laptop2",
       "label": "",
       "flow": 0
     },
     {
+      "id": "13",
       "source": "printer2",
       "target": "computer2",
       "label": "",
       "flow": 0
     },
     {
+      "id": "14",
       "source": "phone2",
       "target": "switch3",
       "label": "192.168.1.79/26",
       "flow": 0
     },
     {
+      "id": "15",
       "source": "switch3",
       "target": "router1",
       "label": "192.168.1.80/26",
       "flow": 0
     },
     {
+      "id": "16",
       "source": "router1",
       "target": "switch2",
       "label": "192.168.1.135/26",
       "flow": 0
     },
     {
-      "source": "switch2",
-      "target": "computer3",
+      "id": "17",
+      "source": "computer3",
+      "target": "switch2",
       "label": "",
       "flow": 0
     },
     {
+      "id": "18",
       "source": "switch2",
       "target": "phone3",
       "label": "",
       "flow": 0
     },
     {
+      "id": "19",
       "source": "switch2",
       "target": "laptop3",
       "label": "",
       "flow": 0
     },
     {
+      "id": "20",
       "source": "switch2",
       "target": "printer3",
       "label": "",

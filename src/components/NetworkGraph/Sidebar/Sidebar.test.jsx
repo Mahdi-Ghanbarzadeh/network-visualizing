@@ -218,7 +218,7 @@ describe("Sidebar Component", () => {
   //   );
 
   //   const networkRepresentationPanel = screen.getByRole("button", {
-  //     name: /right network representation/i,
+  //     name: /right network presentation/i,
   //   });
   //   fireEvent.click(networkRepresentationPanel);
 
@@ -266,7 +266,7 @@ describe("Sidebar Component", () => {
     );
 
     const networkRepresentationPanel = screen.getByRole("button", {
-      name: /right network representation/i,
+      name: /right network presentation/i,
     });
     fireEvent.click(networkRepresentationPanel);
 
@@ -286,7 +286,7 @@ describe("Sidebar Component", () => {
     );
 
     const networkRepresentationPanel = screen.getByRole("button", {
-      name: /right network representation/i,
+      name: /right network presentation/i,
     });
     fireEvent.click(networkRepresentationPanel);
 
@@ -306,7 +306,7 @@ describe("Sidebar Component", () => {
     );
 
     const networkRepresentationPanel = screen.getByRole("button", {
-      name: /right network representation/i,
+      name: /right network presentation/i,
     });
     fireEvent.click(networkRepresentationPanel);
 
@@ -326,7 +326,7 @@ describe("Sidebar Component", () => {
     );
 
     const networkRepresentationPanel = screen.getByRole("button", {
-      name: /right network representation/i,
+      name: /right network presentation/i,
     });
     fireEvent.click(networkRepresentationPanel);
 
@@ -346,7 +346,7 @@ describe("Sidebar Component", () => {
     );
 
     const networkRepresentationPanel = screen.getByRole("button", {
-      name: /right network representation/i,
+      name: /right network presentation/i,
     });
     fireEvent.click(networkRepresentationPanel);
 

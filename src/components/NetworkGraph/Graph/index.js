@@ -1,3 +1,9 @@
+// when user click several times on "show traffic flow", the links doesn't show:
+
+// change code and animation doesn't work
+
+// before changing animation
+
 import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import styles from "./Graph.module.css";
@@ -29,7 +35,11 @@ const GraphVisualization = ({
 }) => {
   // const [data, setData] = useState(dataset);
   const [highlightedNodes, setHighlightedNodes] = useState(
-    new Set(["switch1", "phone2", "computer3"])
+    new Set(["phone2", "computer3"])
+  );
+
+  const [highlightedEdges, setHighlightedEdges] = useState(
+    new Set(["10", "17", "18"])
   );
 
   console.log("--- data ---");
@@ -161,186 +171,6 @@ const GraphVisualization = ({
       console.log("dragleave");
     }
 
-    const colours = [
-      "#32CD32",
-      "#006400",
-      "#32CD32",
-      "#006400",
-      "#32CD32",
-      "#006400",
-      "#32CD32",
-      "#006400",
-    ];
-
-    // Define the linear gradient for the flow animation
-    const linearGradient = svgRef.current
-      .append("defs")
-      .append("linearGradient")
-      .attr("id", "animate-gradient")
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "0%")
-      .attr("y2", "100%")
-      .attr("spreadMethod", "pad");
-
-    // Add color stops to the gradient
-    linearGradient
-      .selectAll(".stop")
-      .data(colours)
-      .enter()
-      .append("stop")
-      .attr("offset", (d, i) => i / (colours.length - 1))
-      .attr("stop-color", (d) => d);
-
-    // Add animation to the gradient
-    linearGradient
-      .append("animate")
-      .attr("attributeName", "y1")
-      .attr("values", "0%;100%")
-      .attr("dur", "6s") // Increase the duration for smoother flow
-      .attr("repeatCount", "indefinite");
-
-    linearGradient
-      .append("animate")
-      .attr("attributeName", "y2")
-      .attr("values", "100%;200%")
-      .attr("dur", "6s") // Increase the duration for smoother flow
-      .attr("repeatCount", "indefinite");
-
-    // to simulate and update visualization
-    if (linkRef.current) {
-      linkRef.current.remove();
-    }
-    // Enter/update pattern for the links
-    linkRef.current = g
-      .selectAll(".link")
-      .data(data.edges)
-      .join("line")
-      .attr("class", "link")
-      .style("stroke-width", (d) =>
-        d.flow > 0 && traffic_flow_visibility ? 10 : 2
-      )
-      .style("stroke", (d) =>
-        d.flow > 0 && traffic_flow_visibility
-          ? "url(#animate-gradient)"
-          : "#ccc"
-      )
-      .style("opacity", (d) =>
-        d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
-      )
-      .style("cursor", "pointer")
-      .on("click", edgeHandleClick)
-      .on("contextmenu", edgeContextMenuHandler);
-
-    function edgeContextMenuHandler(event, edge) {
-      event.preventDefault();
-      setContextMenuPosition({ x: event.clientX, y: event.clientY });
-      setContextMenuVisible(true);
-      setRightClickedEdgeData(edge); // Store clicked node data
-      setCurrentMenuContext("Edge");
-
-      // Hide the tooltip when mouse leaves the node (because it is still shown)
-      hideTooltip();
-    }
-
-    function edgeHandleClick(event, d) {
-      if (clickedEdgeRef.current === d) {
-        // If the clicked edge is already clicked, reset the styles
-        resetStyles();
-      } else {
-        if (clickedEdgeRef.current !== null) {
-          // Reset the styles of the previously clicked edge
-          resetStyles();
-        }
-
-        // Get the clicked edge's source and target nodes
-        clickedEdgeRef.current = d;
-        const sourceNode = clickedEdgeRef.current.source;
-        const targetNode = clickedEdgeRef.current.target;
-
-        // Extract the sibling nodes from the clicked edge
-        const siblingNodes = [sourceNode, targetNode];
-
-        // Update visualization to highlight the clicked edge and its nodes
-        linkRef.current
-          .filter((edge) => edge === clickedEdgeRef.current)
-          .style("opacity", 1)
-          .style("filter", "none")
-          .style("stroke-width", 3.5);
-
-        linkRef.current
-          .filter((edge) => edge !== clickedEdgeRef.current)
-          .style("opacity", 0.05)
-          .style("filter", "grayscale(70%)");
-
-        linkLabelsRef.current
-          .filter((edge) => edge === clickedEdgeRef.current)
-          .style("opacity", 1)
-          .style("filter", "none");
-
-        linkLabelsRef.current
-          .filter((edge) => edge !== clickedEdgeRef.current)
-          .style("opacity", 0.4)
-          .style("filter", "grayscale(70%)");
-
-        nodeRef.current
-          .filter((node) => siblingNodes.includes(node))
-          .style("opacity", 1)
-          .style("filter", "none")
-          .select("circle")
-          // .style("fill", (node) =>
-          //   siblingNodes.includes(node) ? "steelblue" : "steelblue"
-          // )
-          .style("stroke", (node) =>
-            siblingNodes.includes(node) ? "#ddd" : "#bbb"
-          )
-          .style("stroke-width", (node) =>
-            siblingNodes.includes(node) ? 3.5 : 2
-          );
-
-        nodeRef.current
-          .filter((node) => !siblingNodes.includes(node))
-          .style("opacity", 0.7)
-          .style("filter", "grayscale(70%)");
-
-        nodeLabelsRef.current
-          .filter((node) => siblingNodes.includes(node))
-          .style("opacity", 1)
-          .style("filter", "none");
-
-        nodeLabelsRef.current
-          .filter((node) => !siblingNodes.includes(node))
-          .style("opacity", 0.4)
-          .style("filter", "grayscale(70%)");
-
-        // Set the clicked edge in order to keep and reset it
-        // clickedEdgeRef.current = clickedEdgeRef.current;
-
-        // Add a keydown event listener
-        window.addEventListener("keydown", handleKeyDown);
-      }
-    }
-
-    // If you want to animate the edges, you can transition the positions
-    linkRef.current
-      .transition()
-      .duration(2000) // Adjust the duration as needed
-      .attr("x1", (d) => d.source.x)
-      .attr("y1", (d) => d.source.y)
-      .attr("x2", (d) => d.target.x)
-      .attr("y2", (d) => d.target.y)
-      .on("end", () => {
-        // Restart the animation when the transition ends
-        linearGradient.selectAll("animate").each(function () {
-          this.beginElement();
-        });
-      });
-
-    // Start the initial animation
-    linearGradient.selectAll("animate").each(function () {
-      this.beginElement();
-    });
-
     // to simulate and update visualization
     if (linkLabelsRef.current) {
       linkLabelsRef.current.remove();
@@ -363,12 +193,67 @@ const GraphVisualization = ({
       .style("pointer-events", "none")
       .style("user-select", "none"); // Prevent text selection
 
+    // Append a foreignObject for each node to embed the React component
+    // nodeRef.current
+    //   .append("foreignObject")
+    //   .attr("width", 30) // Adjust the size
+    //   .attr("height", 30) // Adjust the size
+    //   .attr("x", -15) // Adjust the positioning
+    //   .attr("y", -15) // Adjust the positioning
+    //   .html((d) => {
+    //     switch (d.device_type) {
+    //       case "computer":
+    //         return <ComputerIcon />; // Embed the React component
+    //       // Add cases for other icons
+    //       default:
+    //         return ""; // Return empty string if no matching icon
+    //     }
+    //   });
+
+    // Initialize the simulation with the initial force properties
+    initializeSimulation();
+
+    return () => {
+      // Cleanup function to stop the simulation on unmount
+      if (simulationRef.current) {
+        simulationRef.current.stop();
+      }
+    };
+  }, [data]);
+
+  // Use useEffect hook to update the show traffic flow
+  useEffect(() => {
+    // to simulate and update visualization
+    if (linkRef.current) {
+      linkRef.current.remove();
+    }
+    // Enter/update pattern for the links
+    linkRef.current = svgRef.current
+      .select("g")
+      .selectAll(".link")
+      .data(data.edges)
+      .join("line")
+      .style("cursor", "pointer")
+      .attr("class", (d) =>
+        d.flow > 0 && traffic_flow_visibility ? styles.animate_line : "link"
+      )
+      .on("click", edgeHandleClick)
+      .on("contextmenu", edgeContextMenuHandler);
+
+    // Restart the simulation with the updated forces
+    if (simulationRef.current) {
+      simulationRef.current.alpha(0).restart();
+    }
+  }, [data, traffic_flow_visibility, vulnerability_visibility]);
+
+  useEffect(() => {
     // to simulate and update visualization
     if (nodeRef.current) {
       nodeRef.current.remove();
     }
 
-    nodeRef.current = g
+    nodeRef.current = svgRef.current
+      .select("g")
       .selectAll("g")
       .data(data.nodes)
       .enter()
@@ -377,125 +262,6 @@ const GraphVisualization = ({
       .style("cursor", "pointer")
       .on("click", nodeHandleClick)
       .on("contextmenu", nodeContextMenuHandler);
-
-    // g.selectAll("g").append("div");
-    // nodeRef.current.append("div");
-
-    function nodeContextMenuHandler(event, node) {
-      event.preventDefault();
-      setContextMenuPosition({ x: event.clientX, y: event.clientY });
-      setContextMenuVisible(true);
-      setRightClickedNodeData(node); // Store clicked node data
-      setCurrentMenuContext("Node");
-
-      // Hide the tooltip when mouse leaves the node (because it is still shown)
-      hideTooltip();
-    }
-
-    // Click event handler
-    function nodeHandleClick(event, d) {
-      if (clickedNodeRef.current === d) {
-        // If the clicked node is already clicked, reset the styles
-        resetStyles();
-      } else {
-        if (clickedNodeRef.current !== null) {
-          // Reset the styles of the previously clicked node
-          resetStyles();
-        }
-
-        // Get the clicked node and its connected links
-        const clickedNode = d;
-        const connectedLinks = data.edges.filter(
-          (link) =>
-            link.source.id === clickedNode.id ||
-            link.target.id === clickedNode.id
-        );
-
-        // Extract the siblings from connected links
-        const siblingNodes = [clickedNode];
-        connectedLinks.forEach((link) => {
-          if (link.source.id === clickedNode.id) {
-            siblingNodes.push(link.target);
-          } else {
-            siblingNodes.push(link.source);
-          }
-        });
-
-        // Update visualization to highlight the clicked node and its siblings
-        nodeRef.current
-          .filter((node) => siblingNodes.includes(node))
-          .style("opacity", 1)
-          .style("filter", "none")
-          .select("circle")
-          // .style("fill", (node) =>
-          //   node === clickedNode ? "steelblue" : "steelblue"
-          // )
-          .style("stroke", (node) => (node === clickedNode ? "#ddd" : "#bbb"))
-          .style("stroke-width", (node) => (node === clickedNode ? 3.5 : 2));
-
-        nodeRef.current
-          .filter((node) => !siblingNodes.includes(node))
-          .style("opacity", 0.7)
-          .style("filter", "grayscale(70%)");
-
-        nodeLabelsRef.current
-          .filter(
-            (node) => siblingNodes.includes(node) && siblingNodes.includes(node)
-          )
-          .style("opacity", 1)
-          .style("filter", "none");
-
-        nodeLabelsRef.current
-          .filter(
-            (node) =>
-              !(siblingNodes.includes(node) && siblingNodes.includes(node))
-          )
-          .style("opacity", 0.4)
-          .style("filter", "grayscale(70%)");
-
-        linkRef.current
-          .filter(
-            (link) =>
-              siblingNodes.includes(link.source) &&
-              siblingNodes.includes(link.target)
-          )
-          .style("opacity", 1)
-          .style("filter", "none");
-
-        linkRef.current
-          .filter(
-            (link) =>
-              !siblingNodes.includes(link.source) ||
-              !siblingNodes.includes(link.target)
-          )
-          .style("opacity", 0.05)
-          .style("filter", "grayscale(70%)");
-
-        linkLabelsRef.current
-          .filter(
-            (link) =>
-              siblingNodes.includes(link.source) &&
-              siblingNodes.includes(link.target)
-          )
-          .style("opacity", 1)
-          .style("filter", "none");
-
-        linkLabelsRef.current
-          .filter(
-            (link) =>
-              !siblingNodes.includes(link.source) ||
-              !siblingNodes.includes(link.target)
-          )
-          .style("opacity", 0.4)
-          .style("filter", "grayscale(70%)");
-
-        // Set the clicked node in order to keep and reset it
-        clickedNodeRef.current = clickedNode;
-
-        // Add a keydown event listener
-        window.addEventListener("keydown", handleKeyDown);
-      }
-    }
 
     // Append an outer circle to add a border to the node
     nodeRef.current
@@ -522,23 +288,6 @@ const GraphVisualization = ({
       .attr("draggable", "false")
       .attr("href", (d) => getIcon(d.device_type))
       .style("pointer-events", "none");
-
-    // Append a foreignObject for each node to embed the React component
-    // nodeRef.current
-    //   .append("foreignObject")
-    //   .attr("width", 30) // Adjust the size
-    //   .attr("height", 30) // Adjust the size
-    //   .attr("x", -15) // Adjust the positioning
-    //   .attr("y", -15) // Adjust the positioning
-    //   .html((d) => {
-    //     switch (d.device_type) {
-    //       case "computer":
-    //         return <ComputerIcon />; // Embed the React component
-    //       // Add cases for other icons
-    //       default:
-    //         return ""; // Return empty string if no matching icon
-    //     }
-    //   });
 
     // Display the node IP above it if node_label_visibility is true
     nodeLabelsRef.current = nodeRef.current
@@ -602,19 +351,291 @@ const GraphVisualization = ({
             d3.select("." + styles.tooltip).remove();
           });
       });
+  });
 
-    // Initialize the simulation with the initial force properties
-    initializeSimulation();
+  // Use useEffect hook to update the show vulnerability points
+  useEffect(() => {
+    svgRef.current
+      .select("g")
+      .selectAll(".link")
+      .attr("class", (d) =>
+        vulnerability_visibility && highlightedEdges.has(d.id)
+          ? styles.animate_line_error
+          : `link ${styles.link}`
+      );
 
-    return () => {
-      // Cleanup function to stop the simulation on unmount
-      if (simulationRef.current) {
-        simulationRef.current.stop();
+    nodeRef.current
+      .selectAll("circle")
+      .attr("class", (d) =>
+        vulnerability_visibility && highlightedNodes.has(d.id)
+          ? styles.winker_animation
+          : ""
+      );
+  }, [vulnerability_visibility, traffic_flow_visibility]);
+
+  // Click event handler
+  function nodeHandleClick(event, d) {
+    if (clickedNodeRef.current === d) {
+      // If the clicked node is already clicked, reset the styles
+      resetStyles();
+    } else {
+      if (clickedNodeRef.current !== null) {
+        // Reset the styles of the previously clicked node
+        resetStyles();
       }
-    };
-  }, [data]);
 
-  function updateGraph() {}
+      // Get the clicked node and its connected links
+      const clickedNode = d;
+      const connectedLinks = data.edges.filter(
+        (link) =>
+          link.source.id === clickedNode.id || link.target.id === clickedNode.id
+      );
+
+      // Extract the siblings from connected links
+      const siblingNodes = [clickedNode];
+      connectedLinks.forEach((link) => {
+        if (link.source.id === clickedNode.id) {
+          siblingNodes.push(link.target);
+        } else {
+          siblingNodes.push(link.source);
+        }
+      });
+
+      // Update visualization to highlight the clicked node and its siblings
+      nodeRef.current
+        .filter((node) => siblingNodes.includes(node))
+        .style("opacity", 1)
+        .style("filter", "none")
+        .select("circle")
+        // .style("fill", (node) =>
+        //   node === clickedNode ? "steelblue" : "steelblue"
+        // )
+        .style("stroke", (node) => (node === clickedNode ? "#ddd" : "#bbb"))
+        .style("stroke-width", (node) => (node === clickedNode ? 3.5 : 2));
+
+      nodeRef.current
+        .filter((node) => !siblingNodes.includes(node))
+        .style("opacity", 0.7)
+        .style("filter", "grayscale(70%)");
+
+      nodeLabelsRef.current
+        .filter(
+          (node) => siblingNodes.includes(node) && siblingNodes.includes(node)
+        )
+        .style("opacity", 1)
+        .style("filter", "none");
+
+      nodeLabelsRef.current
+        .filter(
+          (node) =>
+            !(siblingNodes.includes(node) && siblingNodes.includes(node))
+        )
+        .style("opacity", 0.4)
+        .style("filter", "grayscale(70%)");
+
+      linkRef.current
+        .filter(
+          (link) =>
+            siblingNodes.includes(link.source) &&
+            siblingNodes.includes(link.target)
+        )
+        .style("opacity", 1)
+        .style("filter", "none");
+
+      linkRef.current
+        .filter(
+          (link) =>
+            !siblingNodes.includes(link.source) ||
+            !siblingNodes.includes(link.target)
+        )
+        .style("opacity", 0.05)
+        .style("filter", "grayscale(70%)");
+
+      linkLabelsRef.current
+        .filter(
+          (link) =>
+            siblingNodes.includes(link.source) &&
+            siblingNodes.includes(link.target)
+        )
+        .style("opacity", 1)
+        .style("filter", "none");
+
+      linkLabelsRef.current
+        .filter(
+          (link) =>
+            !siblingNodes.includes(link.source) ||
+            !siblingNodes.includes(link.target)
+        )
+        .style("opacity", 0.4)
+        .style("filter", "grayscale(70%)");
+
+      // Set the clicked node in order to keep and reset it
+      clickedNodeRef.current = clickedNode;
+
+      // Add a keydown event listener
+      window.addEventListener("keydown", handleKeyDown);
+    }
+  }
+
+  function nodeContextMenuHandler(event, node) {
+    event.preventDefault();
+    setContextMenuPosition({ x: event.clientX, y: event.clientY });
+    setContextMenuVisible(true);
+    setRightClickedNodeData(node); // Store clicked node data
+    setCurrentMenuContext("Node");
+
+    // Hide the tooltip when mouse leaves the node (because it is still shown)
+    hideTooltip();
+  }
+
+  // Function to initialize the simulation with the initial force properties
+  const initializeSimulation = () => {
+    simulationRef.current = d3
+      .forceSimulation(data.nodes)
+      .force("center", d3.forceCenter())
+      .force("charge", d3.forceManyBody())
+      .force("collide", d3.forceCollide())
+      .force("forceX", d3.forceX())
+      .force("forceY", d3.forceY())
+      .force(
+        "link",
+        d3
+          .forceLink()
+          .links(data.edges)
+          .id((d) => d.id)
+      )
+      .force("radial", d3.forceRadial());
+
+    simulationRef.current.on("tick", () => {
+      // Access link, linkLabels, and node using refs
+      linkRef.current
+        .attr("x1", (d) => d.source.x)
+        .attr("y1", (d) => d.source.y)
+        .attr("x2", (d) => d.target.x)
+        .attr("y2", (d) => d.target.y);
+
+      // Position the link labels at the midpoint between the source and target nodes
+      linkLabelsRef.current
+        .attr("x", (d) => (d.source.x + d.target.x) / 2)
+        .attr("y", (d) => (d.source.y + d.target.y) / 2);
+
+      nodeRef.current.attr("transform", (d) => {
+        // Ensure nodes stay within SVG bounds
+        d.x = Math.max(
+          20,
+          Math.min(
+            containerGraphRef.current.clientWidth - (node_radius + 10),
+            d.x
+          )
+        );
+        d.y = Math.max(
+          20,
+          Math.min(
+            containerGraphRef.current.clientHeight - (node_radius + 10),
+            d.y
+          )
+        );
+        return `translate(${d.x},${d.y})`;
+      });
+    });
+  };
+
+  // Function to update the simulation forces with new force_properties
+  const updateForces = () => {
+    if (!simulationRef.current) return;
+
+    // containerGraphRef.current.clientWidth = width , containerGraphRef.current.clientHeight = height
+    simulationRef.current
+      .force("center")
+      .x(containerGraphRef.current.clientWidth * force_properties.center.x)
+      .y(containerGraphRef.current.clientHeight * force_properties.center.y)
+      .strength(force_properties.center.strength);
+
+    if (force_properties.charge.enabled) {
+      simulationRef.current
+        .force("charge")
+        .strength(force_properties.charge.strength)
+        .distanceMin(force_properties.charge.distanceMin)
+        .distanceMax(force_properties.charge.distanceMax)
+        .theta(force_properties.charge.theta);
+    } else {
+      simulationRef.current.force("charge", null); // Remove the charge force
+      simulationRef.current.force(
+        "charge",
+        d3.forceManyBody().strength(default_force_properties.charge.strength)
+      );
+
+      // return to the all default state
+      // simulationRef.current
+      //   .force("charge")
+      //   .strength(default_force_properties.charge.strength)
+      //   .distanceMin(default_force_properties.charge.distanceMin)
+      //   .distanceMax(default_force_properties.charge.distanceMax)
+      //   .theta(default_force_properties.charge.theta);
+    }
+
+    if (force_properties.collide.enabled) {
+      simulationRef.current
+        .force("collide")
+        .radius(force_properties.collide.radius)
+        .strength(force_properties.collide.strength)
+        .iterations(force_properties.collide.iterations);
+    } else {
+      simulationRef.current.force("collide", null); // Remove the collide force
+      simulationRef.current.force("collide", d3.forceCollide());
+    }
+
+    if (force_properties.forceX.enabled) {
+      simulationRef.current
+        .force("forceX")
+        .strength(force_properties.forceX.strength)
+        .x(force_properties.forceX.x);
+    } else {
+      simulationRef.current.force("forceX", null); // Remove the forceX force
+      simulationRef.current.force("forceX", d3.forceX());
+    }
+
+    if (force_properties.forceY.enabled) {
+      simulationRef.current
+        .force("forceY")
+        .strength(force_properties.forceY.strength)
+        .y(force_properties.forceY.y);
+    } else {
+      simulationRef.current.force("forceY", null); // Remove the forceY force
+      simulationRef.current.force("forceY", d3.forceY());
+    }
+
+    if (force_properties.link.enabled) {
+      simulationRef.current
+        .force("link")
+        .distance(force_properties.link.distance)
+        .iterations(force_properties.link.iterations)
+        .strength(force_properties.link.strength);
+    } else {
+      simulationRef.current.force("link", null); // Remove the link force
+      simulationRef.current.force(
+        "link",
+        d3
+          .forceLink()
+          .links(data.edges)
+          .id((d) => d.id)
+      );
+    }
+
+    if (force_properties.radial.enabled) {
+      simulationRef.current.force(
+        "radial",
+        d3
+          .forceRadial()
+          .radius(force_properties.radial.radius)
+          .x(force_properties.radial.x)
+          .y(force_properties.radial.y)
+          .strength(force_properties.radial.strength)
+      );
+    } else {
+      simulationRef.current.force("radial", null); // Remove the radial force without adding it again
+    }
+  };
 
   function hideTooltip() {
     d3.select("." + styles.tooltip)
@@ -659,10 +680,13 @@ const GraphVisualization = ({
 
     linkRef.current
       .style("opacity", (d) =>
-        d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
+        (d.flow > 0 && traffic_flow_visibility) ||
+        (vulnerability_visibility && highlightedEdges.has(d.id))
+          ? 1
+          : 0.6
       )
       .style("filter", "none")
-      .style("stroke-width", 2);
+      .style("stroke-width", 3);
 
     linkLabelsRef.current.style("opacity", 1).style("filter", "none");
 
@@ -945,7 +969,14 @@ const GraphVisualization = ({
     } else {
       nodeRef.current.on(".drag", null);
     }
-  }, [data, zoom_panning_availability]);
+  }, [
+    data,
+    zoom_panning_availability,
+    node_label_visibility,
+    edge_label_visibility,
+    traffic_flow_visibility,
+    vulnerability_visibility,
+  ]);
 
   // Use useEffect hook to update the simulation whenever force_properties changes
   useEffect(() => {
@@ -972,196 +1003,91 @@ const GraphVisualization = ({
     nodeLabelsRef.current.text((d) => (node_label_visibility ? d.label : ""));
   }, [node_label_visibility, edge_label_visibility]);
 
-  // Use useEffect hook to update the show traffic flow
-  useEffect(() => {
-    // Enter/update pattern for the links
-    linkRef.current = svgRef.current
-      .select("g")
-      .selectAll(".link")
-      .data(data.edges)
-      .join("line")
-      .attr("class", "link")
-      .style("stroke-width", (d) =>
-        d.flow > 0 && traffic_flow_visibility ? 10 : 2
-      )
-      .style("stroke", (d) =>
-        d.flow > 0 && traffic_flow_visibility
-          ? "url(#animate-gradient)"
-          : "#ccc"
-      )
-      .style("opacity", (d) =>
-        d.flow > 0 && traffic_flow_visibility ? 1 : 0.6
-      );
-  }, [traffic_flow_visibility]);
+  function edgeHandleClick(event, d) {
+    if (clickedEdgeRef.current === d) {
+      // If the clicked edge is already clicked, reset the styles
+      resetStyles();
+    } else {
+      if (clickedEdgeRef.current !== null) {
+        // Reset the styles of the previously clicked edge
+        resetStyles();
+      }
 
-  // Use useEffect hook to update the show vulnerability points
-  useEffect(() => {
-    nodeRef.current
-      .selectAll("circle")
-      .attr("class", (d) =>
-        vulnerability_visibility && highlightedNodes.has(d.id)
-          ? styles.winker_animation
-          : ""
-      );
-  }, [vulnerability_visibility]);
+      // Get the clicked edge's source and target nodes
+      clickedEdgeRef.current = d;
+      const sourceNode = clickedEdgeRef.current.source;
+      const targetNode = clickedEdgeRef.current.target;
 
-  // Function to initialize the simulation with the initial force properties
-  const initializeSimulation = () => {
-    simulationRef.current = d3
-      .forceSimulation(data.nodes)
-      .force("center", d3.forceCenter())
-      .force("charge", d3.forceManyBody())
-      .force("collide", d3.forceCollide())
-      .force("forceX", d3.forceX())
-      .force("forceY", d3.forceY())
-      .force(
-        "link",
-        d3
-          .forceLink()
-          .links(data.edges)
-          .id((d) => d.id)
-      )
-      .force("radial", d3.forceRadial());
+      // Extract the sibling nodes from the clicked edge
+      const siblingNodes = [sourceNode, targetNode];
 
-    simulationRef.current.on("tick", () => {
-      // Access link, linkLabels, and node using refs
+      // Update visualization to highlight the clicked edge and its nodes
       linkRef.current
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+        .filter((edge) => edge === clickedEdgeRef.current)
+        .style("opacity", 1)
+        .style("filter", "none")
+        .style("stroke-width", 4);
 
-      // Position the link labels at the midpoint between the source and target nodes
+      linkRef.current
+        .filter((edge) => edge !== clickedEdgeRef.current)
+        .style("opacity", 0.05)
+        .style("filter", "grayscale(70%)");
+
       linkLabelsRef.current
-        .attr("x", (d) => (d.source.x + d.target.x) / 2)
-        .attr("y", (d) => (d.source.y + d.target.y) / 2);
+        .filter((edge) => edge === clickedEdgeRef.current)
+        .style("opacity", 1)
+        .style("filter", "none");
 
-      nodeRef.current.attr("transform", (d) => {
-        // Ensure nodes stay within SVG bounds
-        d.x = Math.max(
-          20,
-          Math.min(
-            containerGraphRef.current.clientWidth - (node_radius + 10),
-            d.x
-          )
+      linkLabelsRef.current
+        .filter((edge) => edge !== clickedEdgeRef.current)
+        .style("opacity", 0.4)
+        .style("filter", "grayscale(70%)");
+
+      nodeRef.current
+        .filter((node) => siblingNodes.includes(node))
+        .style("opacity", 1)
+        .style("filter", "none")
+        .select("circle")
+        .style("stroke", (node) =>
+          siblingNodes.includes(node) ? "#ddd" : "#bbb"
+        )
+        .style("stroke-width", (node) =>
+          siblingNodes.includes(node) ? 3.5 : 2
         );
-        d.y = Math.max(
-          20,
-          Math.min(
-            containerGraphRef.current.clientHeight - (node_radius + 10),
-            d.y
-          )
-        );
-        return `translate(${d.x},${d.y})`;
-      });
-    });
-  };
-  // Function to update the simulation forces with new force_properties
-  const updateForces = () => {
-    if (!simulationRef.current) return;
 
-    // containerGraphRef.current.clientWidth = width , containerGraphRef.current.clientHeight = height
-    simulationRef.current
-      .force("center")
-      .x(containerGraphRef.current.clientWidth * force_properties.center.x)
-      .y(containerGraphRef.current.clientHeight * force_properties.center.y)
-      .strength(force_properties.center.strength);
+      nodeRef.current
+        .filter((node) => !siblingNodes.includes(node))
+        .style("opacity", 0.7)
+        .style("filter", "grayscale(70%)");
 
-    if (force_properties.charge.enabled) {
-      simulationRef.current
-        .force("charge")
-        .strength(force_properties.charge.strength)
-        .distanceMin(force_properties.charge.distanceMin)
-        .distanceMax(force_properties.charge.distanceMax)
-        .theta(force_properties.charge.theta);
-    } else {
-      simulationRef.current.force("charge", null); // Remove the charge force
-      simulationRef.current.force(
-        "charge",
-        d3.forceManyBody().strength(default_force_properties.charge.strength)
-      );
+      nodeLabelsRef.current
+        .filter((node) => siblingNodes.includes(node))
+        .style("opacity", 1)
+        .style("filter", "none");
 
-      // return to the all default state
-      // simulationRef.current
-      //   .force("charge")
-      //   .strength(default_force_properties.charge.strength)
-      //   .distanceMin(default_force_properties.charge.distanceMin)
-      //   .distanceMax(default_force_properties.charge.distanceMax)
-      //   .theta(default_force_properties.charge.theta);
+      nodeLabelsRef.current
+        .filter((node) => !siblingNodes.includes(node))
+        .style("opacity", 0.4)
+        .style("filter", "grayscale(70%)");
+
+      // Set the clicked edge in order to keep and reset it
+      // clickedEdgeRef.current = clickedEdgeRef.current;
+
+      // Add a keydown event listener
+      window.addEventListener("keydown", handleKeyDown);
     }
+  }
 
-    if (force_properties.collide.enabled) {
-      simulationRef.current
-        .force("collide")
-        .radius(force_properties.collide.radius)
-        .strength(force_properties.collide.strength)
-        .iterations(force_properties.collide.iterations);
-    } else {
-      simulationRef.current.force("collide", null); // Remove the collide force
-      simulationRef.current.force("collide", d3.forceCollide());
-    }
+  function edgeContextMenuHandler(event, edge) {
+    event.preventDefault();
+    setContextMenuPosition({ x: event.clientX, y: event.clientY });
+    setContextMenuVisible(true);
+    setRightClickedEdgeData(edge); // Store clicked node data
+    setCurrentMenuContext("Edge");
 
-    if (force_properties.forceX.enabled) {
-      simulationRef.current
-        .force("forceX")
-        .strength(force_properties.forceX.strength)
-        .x(force_properties.forceX.x);
-    } else {
-      simulationRef.current.force("forceX", null); // Remove the forceX force
-      simulationRef.current.force("forceX", d3.forceX());
-    }
-
-    if (force_properties.forceY.enabled) {
-      simulationRef.current
-        .force("forceY")
-        .strength(force_properties.forceY.strength)
-        .y(force_properties.forceY.y);
-    } else {
-      simulationRef.current.force("forceY", null); // Remove the forceY force
-      simulationRef.current.force("forceY", d3.forceY());
-    }
-
-    if (force_properties.link.enabled) {
-      simulationRef.current
-        .force("link")
-        .distance(force_properties.link.distance)
-        .iterations(force_properties.link.iterations)
-        .strength(force_properties.link.strength);
-    } else {
-      simulationRef.current.force("link", null); // Remove the link force
-      simulationRef.current.force(
-        "link",
-        d3
-          .forceLink()
-          .links(data.edges)
-          .id((d) => d.id)
-      );
-    }
-
-    if (force_properties.radial.enabled) {
-      simulationRef.current.force(
-        "radial",
-        d3
-          .forceRadial()
-          .radius(force_properties.radial.radius)
-          .x(force_properties.radial.x)
-          .y(force_properties.radial.y)
-          .strength(force_properties.radial.strength)
-      );
-    } else {
-      simulationRef.current.force("radial", null); // Remove the radial force without adding it again
-
-      // simulationRef.current.force(
-      //   "radial",
-      //   d3
-      //     .forceRadial()
-      //     .radius(default_force_properties.radial.radius)
-      //     .x(default_force_properties.radial.x)
-      //     .y(default_force_properties.radial.y)
-      //     .strength(default_force_properties.radial.strength)
-      // );
-    }
-  };
+    // Hide the tooltip when mouse leaves the node (because it is still shown)
+    hideTooltip();
+  }
 
   // Function to trigger SVG download
   const downloadGraphImage = () => {
