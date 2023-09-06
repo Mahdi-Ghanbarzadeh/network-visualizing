@@ -13,6 +13,15 @@ import { ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
 
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import highchartsMap from "highcharts/modules/map";
+import proj4 from "proj4";
+import mapDataIE from "@highcharts/map-collection/countries/ir/ir-all.topo.json";
+// import mapDataIE from "@highcharts/mapdata/custom/world-highres.topo.json";
+highchartsMap(Highcharts); // Initialize the map module
+
+if (typeof window !== "undefined") {
+  window.proj4 = window.proj4 || proj4;
+}
 
 const { Option } = Select;
 
@@ -34,6 +43,8 @@ function ContextMenu({
   device_types,
 }) {
   const deviceTypeValues = device_types.map((device) => device.device_type);
+  console.log("clickedNodeData");
+  console.log(clickedNodeData?.id);
 
   const subnetMaskRanges = [
     { label: "/32 - 1 IP", value: "255.255.255.255" },
@@ -78,48 +89,61 @@ function ContextMenu({
   const [nodeReportModalVisibility, setNodeReportModalVisibility] =
     useState(false);
 
-  // Generate sample attack data
-  const generateAttackData = () => {
-    const timestamps = Array.from(
-      { length: 10 },
-      (_, i) => new Date().getTime() - i * 1000
-    );
-    const attackData = timestamps.map((timestamp) => ({
+  const ID = clickedNodeData?.id;
+
+  // Attack Data Chart for a Single Device
+  const generateAttackDataForDevice = (deviceId, numberOfHours) => {
+    const generateTimestampsForPreviousHours = (numberOfHours) => {
+      const currentTimestamp = new Date().getTime();
+      const timestamps = Array.from({ length: numberOfHours }, (_, i) => {
+        const timestamp = currentTimestamp - i * 60 * 60 * 1000; // 1 hour = 60 minutes = 60 seconds = 1000 milliseconds
+        return timestamp;
+      });
+      return timestamps;
+    };
+
+    const timestamps = generateTimestampsForPreviousHours(numberOfHours);
+
+    const attacks = timestamps.map((timestamp) => ({
       x: timestamp,
-      y: Math.random() * 50 + 50, // Random values between 50 and 100 for attack
+      y: Math.floor(Math.random() * 10) + 5, // Random values between 5 and 14 for actual attacks
     }));
-    return attackData;
+
+    return { attacks };
   };
 
-  // Generate sample data for graphs
-  const attackData = generateAttackData();
+  // Generate sample attack data for a single device for the previous 10 hours
+  const deviceAttackData = generateAttackDataForDevice(ID, 10);
 
   const attackOptions = {
     title: {
-      text: "Attack Data",
+      text: `Attack Data for ${ID}`,
     },
     xAxis: {
       type: "datetime",
     },
     yAxis: {
       title: {
-        text: "Value",
+        text: "number of attacks",
       },
     },
     series: [
       {
-        name: "Attack Data",
-        data: attackData.map((dataPoint) => [dataPoint.x, dataPoint.y]),
+        name: "Attacks",
+        data: deviceAttackData.attacks.map((dataPoint) => [
+          dataPoint.x,
+          dataPoint.y,
+        ]),
       },
     ],
   };
-
+  // History of Attacks Chart
   const columnRotatedLabelsOptions = {
     chart: {
       type: "column",
     },
     title: {
-      text: "History of Attacks",
+      text: `History of Attacks - ${ID}`,
     },
     xAxis: {
       categories: ["computer3", "laptop3", "phone1", "computer2", "laptop2"],
@@ -152,8 +176,8 @@ function ContextMenu({
     ],
   };
 
+  // Network Attack Distribution Chart
   const deviceData = {
-    id: "phone2",
     attacks: [
       {
         name: "Malware",
@@ -183,17 +207,16 @@ function ContextMenu({
         name: "Man-in-the-Middle",
         y: 6,
       },
-      // Add more attack types and their corresponding percentages
     ],
   };
-  const { id, attacks } = deviceData;
 
+  const { attacks } = deviceData;
   const pieChartOptions = {
     chart: {
       type: "pie",
     },
     title: {
-      text: `Network Attacks Distribution - Device: ${id}`,
+      text: `Network Attacks Distribution - ${ID}`,
     },
     tooltip: {
       pointFormat: "<b>{point.percentage:.1f}%</b>",
@@ -216,6 +239,86 @@ function ContextMenu({
         name: "Attack Types",
         colorByPoint: true,
         data: attacks,
+      },
+    ],
+  };
+
+  // Attack Location Chart
+  const mapOptions = {
+    chart: {
+      map: "countries/ir/iran",
+    },
+    title: {
+      text: `Attack Location - ${ID}`,
+    },
+    credits: {
+      enabled: false,
+    },
+    mapNavigation: {
+      enabled: true,
+    },
+    tooltip: {
+      headerFormat: "",
+      pointFormat: "{point.custom.role}",
+    },
+    series: [
+      {
+        name: "Basemap",
+        mapData: mapDataIE,
+        borderColor: "#A0A0A0",
+        nullColor: "rgba(200, 200, 200, 0.3)",
+        showInLegend: false,
+      },
+      {
+        type: "mapline",
+        data: [
+          {
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [51.6, 32.6],
+                [51.3, 35.6],
+              ],
+            },
+            className: styles.animated_line,
+            color: "#eb2943 ",
+          },
+        ],
+        lineWidth: 3,
+        enableMouseTracking: false,
+      },
+      {
+        type: "mappoint",
+        // name: "Locations",
+        color: "#4169E1",
+        data: [
+          {
+            lon: 51.3,
+            lat: 35.6,
+            name: "Tehran",
+            keyword: "Tehran",
+            custom: {
+              role: "Offender",
+            },
+          },
+          {
+            lon: 51.6,
+            lat: 32.6,
+            name: "Isfahan",
+            keyword: "Isfahan",
+            custom: {
+              role: "Victim",
+            },
+          },
+        ],
+        cursor: "pointer",
+        point: {
+          events: {
+            click: function () {
+              console.log(this.keyword);
+            },
+          },
+        },
       },
     ],
   };
@@ -621,7 +724,7 @@ function ContextMenu({
 
       <Modal
         title="Show Report"
-        visible={nodeReportModalVisibility}
+        open={nodeReportModalVisibility}
         onCancel={() => {
           setNodeReportModalVisibility(false);
           deleteAvailable.current = true;
@@ -647,6 +750,10 @@ function ContextMenu({
                 {clickedNodeData.ip_address}
               </div>
             </div>
+            {/* <div className={styles.chartBox}>
+              <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+            </div> */}
+
             <div className={styles.chartBox}>
               <HighchartsReact
                 highcharts={Highcharts}
@@ -665,6 +772,14 @@ function ContextMenu({
               <HighchartsReact
                 highcharts={Highcharts}
                 options={pieChartOptions}
+              />
+            </div>
+
+            <div className={styles.chartBox}>
+              <HighchartsReact
+                constructorType={"mapChart"}
+                highcharts={Highcharts}
+                options={mapOptions}
               />
             </div>
           </div>

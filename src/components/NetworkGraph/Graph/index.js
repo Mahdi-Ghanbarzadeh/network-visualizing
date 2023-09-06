@@ -1,9 +1,3 @@
-// when user click several times on "show traffic flow", the links doesn't show:
-
-// change code and animation doesn't work
-
-// before changing animation
-
 import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import styles from "./Graph.module.css";
@@ -148,17 +142,21 @@ const GraphVisualization = ({
         event.dataTransfer.getData("application/x-d3-node")
       );
 
-      // Update graph's data with the new node
+      // Update the position of the new node to match the drop coordinates
+      newNode.x = event.x;
+      newNode.y = event.y;
+
+      // Update the graph's data with the new node
       setData((prevData) => ({
         ...prevData,
         nodes: [...prevData.nodes, newNode],
       }));
 
-      // Stop the current simulation
-      simulationRef.current.stop();
+      // // Stop the current simulation
+      // simulationRef.current.stop();
 
-      // Reinitialize the simulation with the updated data
-      initializeSimulation();
+      // // Reinitialize the simulation with the updated data
+      // initializeSimulation();
     }
 
     function dragEnterHandler(event) {
@@ -193,23 +191,6 @@ const GraphVisualization = ({
       .style("pointer-events", "none")
       .style("user-select", "none"); // Prevent text selection
 
-    // Append a foreignObject for each node to embed the React component
-    // nodeRef.current
-    //   .append("foreignObject")
-    //   .attr("width", 30) // Adjust the size
-    //   .attr("height", 30) // Adjust the size
-    //   .attr("x", -15) // Adjust the positioning
-    //   .attr("y", -15) // Adjust the positioning
-    //   .html((d) => {
-    //     switch (d.device_type) {
-    //       case "computer":
-    //         return <ComputerIcon />; // Embed the React component
-    //       // Add cases for other icons
-    //       default:
-    //         return ""; // Return empty string if no matching icon
-    //     }
-    //   });
-
     // Initialize the simulation with the initial force properties
     initializeSimulation();
 
@@ -223,6 +204,7 @@ const GraphVisualization = ({
 
   // Use useEffect hook to update the show traffic flow
   useEffect(() => {
+    console.log("Use useEffect hook to update the show traffic flow");
     // to simulate and update visualization
     if (linkRef.current) {
       linkRef.current.remove();
@@ -244,6 +226,7 @@ const GraphVisualization = ({
     if (simulationRef.current) {
       simulationRef.current.alpha(0).restart();
     }
+    // Initialize the simulation with the initial force properties
   }, [data, traffic_flow_visibility, vulnerability_visibility]);
 
   useEffect(() => {
@@ -305,6 +288,7 @@ const GraphVisualization = ({
     // Create the tooltip element
     nodeRef.current
       .on("mouseover", (event, d) => {
+        if (contextMenuVisible) return;
         // Remove the existing tooltip if it exists
         d3.select("." + styles.tooltip).remove();
 
@@ -371,7 +355,7 @@ const GraphVisualization = ({
           ? styles.winker_animation
           : ""
       );
-  }, [vulnerability_visibility, traffic_flow_visibility]);
+  }, [data, vulnerability_visibility, traffic_flow_visibility]);
 
   // Click event handler
   function nodeHandleClick(event, d) {
@@ -1086,6 +1070,7 @@ const GraphVisualization = ({
     setCurrentMenuContext("Edge");
 
     // Hide the tooltip when mouse leaves the node (because it is still shown)
+
     hideTooltip();
   }
 

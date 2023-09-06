@@ -102,3 +102,19 @@
   align-items: center;
   justify-content: center;
 }
+
+.animated_line {
+  /* stroke-width: 3; */
+  stroke-dasharray: 0.5;
+  stroke-dashoffset: 12.5;
+  animation: dash 5s linear infinite;
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 15;
+  }
+  100% {
+    stroke-dashoffset: 30; /* If the reverse movement is changed to - 500 */
+  }
+}
