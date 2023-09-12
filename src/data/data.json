@@ -97,7 +97,7 @@
       "serial_number": "ISP66666",
       "ip_address": "",
       "subnet_mask": "",
-      "mac_address": "CC:01:EE:12:AA:33"
+      "mac_address": ""
     },
     {
       "id": "computer2",
@@ -307,8 +307,8 @@
     },
     {
       "id": "16",
-      "source": "router1",
-      "target": "switch2",
+      "source": "switch2",
+      "target": "router1",
       "label": "192.168.1.135/26",
       "flow": 0
     },

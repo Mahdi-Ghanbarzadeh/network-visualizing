@@ -63,17 +63,25 @@ const NetworkGraph = ({ fullScreenHandle }) => {
   data.nodes.forEach((node) => {
     if (node.ip_address && node.subnet_mask) {
       const networkAddress = calculateLAN(node.ip_address, node.subnet_mask);
-      console.log(networkAddress);
       if (!lans[networkAddress]) {
-        lans[networkAddress] = Object.keys(lans).length + 1; // Assign a distinct LAN number
+        lans[networkAddress] = Object.keys(lans).length + 1;
       }
       node.lan_number = lans[networkAddress];
       node.network_address = networkAddress;
+      node.label = node.ip_address + ipToCIDR(node.subnet_mask);
     }
   });
 
-  console.log(lans);
-  console.log(data);
+  function ipToCIDR(ipAddress) {
+    const octets = ipAddress.split(".").map(Number);
+    const binaryIP = octets
+      .map((octet) => octet.toString(2).padStart(8, "0"))
+      .join("");
+    const cidrPrefix = binaryIP.indexOf("0");
+    return `/${cidrPrefix}`;
+  }
+
+  console.log("test network");
   console.log(data.nodes);
 
   return (

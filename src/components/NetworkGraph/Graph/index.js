@@ -86,7 +86,19 @@ const GraphVisualization = ({
   const zoomRef = useRef();
   const svgRef = useRef();
 
-  const lan_colors = ["#3498db", "#2ecc71", "#9b59b6", "#e67e22", "#1abc9c"];
+  const lan_colors = [
+    "#3498db",
+    "#2ecc71",
+    "#9b59b6",
+    "#e67e22",
+    "#34495e",
+    "#27ae60",
+    "#2980b9",
+    "#d35400",
+    "#e74c3c",
+    "#2c3e50",
+    "#7f8c8d",
+  ];
 
   // Convert the device_types array to an object
   const deviceTypeIcons = {};
@@ -723,6 +735,8 @@ const GraphVisualization = ({
       // Reset styles and clicked edge
       resetStyles();
     }
+    // Hide the tooltip when mouse leaves the node (because it is still shown)
+    hideTooltip();
   }
 
   // Instead of directly using the handleMouseMove and handleMouseUp functions as event handlers, define them inside a useEffect callback function to capture the current value of isDrawingEdge. This will ensure that the event handlers always use the correct value of isDrawingEdge
@@ -960,6 +974,7 @@ const GraphVisualization = ({
     edge_label_visibility,
     traffic_flow_visibility,
     vulnerability_visibility,
+    force_properties,
   ]);
 
   // Use useEffect hook to update the simulation whenever force_properties changes

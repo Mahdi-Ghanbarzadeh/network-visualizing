@@ -602,6 +602,9 @@ function ContextMenu({
             <Descriptions.Item label="Subnet Mask">
               {clickedNodeData.subnet_mask}
             </Descriptions.Item>
+            <Descriptions.Item label="Network Address">
+              {clickedNodeData.network_address}
+            </Descriptions.Item>
             <Descriptions.Item label="MAC Address">
               {clickedNodeData.mac_address}
             </Descriptions.Item>

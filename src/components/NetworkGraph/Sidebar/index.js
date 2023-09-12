@@ -217,7 +217,7 @@ const Sidebar = ({
                   </span>
                   <Slider
                     min={0}
-                    max={2}
+                    max={1}
                     step={0.01}
                     value={forceProperties.center.x}
                     onChange={(value) => handleChange("center", "x", value)}
