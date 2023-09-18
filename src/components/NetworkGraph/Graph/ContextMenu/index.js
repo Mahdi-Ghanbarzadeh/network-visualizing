@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import styles from "./ContextMenu.module.css";
 import {
   Modal,
@@ -16,14 +16,11 @@ import HighchartsReact from "highcharts-react-official";
 import highchartsMap from "highcharts/modules/map";
 import proj4 from "proj4";
 import mapDataIE from "@highcharts/map-collection/countries/ir/ir-all.topo.json";
-// import mapDataIE from "@highcharts/mapdata/custom/world-highres.topo.json";
 highchartsMap(Highcharts); // Initialize the map module
 
 if (typeof window !== "undefined") {
   window.proj4 = window.proj4 || proj4;
 }
-
-const { Option } = Select;
 
 function ContextMenu({
   visible,
@@ -36,11 +33,11 @@ function ContextMenu({
   setClickedNodeData,
   clickedEdgeData,
   setClickedEdgeData,
-  setContextMenuVisible,
   confirmDeleteAction,
   currentMenuContext,
   deleteAvailable,
   device_types,
+  simulationRef,
 }) {
   const deviceTypeValues = device_types.map((device) => device.device_type);
   console.log("clickedNodeData");
@@ -96,7 +93,7 @@ function ContextMenu({
     const generateTimestampsForPreviousHours = (numberOfHours) => {
       const currentTimestamp = new Date().getTime();
       const timestamps = Array.from({ length: numberOfHours }, (_, i) => {
-        const timestamp = currentTimestamp - i * 60 * 60 * 1000; // 1 hour = 60 minutes = 60 seconds = 1000 milliseconds
+        const timestamp = currentTimestamp - i * 60 * 60 * 1000;
         return timestamp;
       });
       return timestamps;
@@ -106,7 +103,7 @@ function ContextMenu({
 
     const attacks = timestamps.map((timestamp) => ({
       x: timestamp,
-      y: Math.floor(Math.random() * 10) + 5, // Random values between 5 and 14 for actual attacks
+      y: Math.floor(Math.random() * 10) + 5,
     }));
 
     return { attacks };
@@ -137,6 +134,7 @@ function ContextMenu({
       },
     ],
   };
+
   // History of Attacks Chart
   const columnRotatedLabelsOptions = {
     chart: {
@@ -348,7 +346,6 @@ function ContextMenu({
 
   const handleOptionClick = (option) => {
     if (currentMenuContext === "Node") {
-      console.log("node options");
       if (option.label === "Show Information") {
         deleteAvailable.current = false;
         if (clickedNodeData) {
@@ -362,14 +359,10 @@ function ContextMenu({
         deleteAvailable.current = false;
         setNodeReportModalVisibility(true);
       } else if (option.label === "Collapse / Expand") {
-        // Handle collapse / expand logic here
-        console.log("Collapse / Expand function");
       } else if (option.label === "Delete Node") {
-        console.log("delete function");
         confirmDeleteAction(null, clickedNodeData);
       }
     } else if (currentMenuContext === "Edge") {
-      console.log("edge options");
       if (option.label === "Show Information") {
         deleteAvailable.current = false;
         if (clickedEdgeData) {
@@ -388,21 +381,16 @@ function ContextMenu({
   };
 
   const handleNodeEditFormSubmit = (values) => {
-    console.log("---values---");
-    console.log(values);
-    // Find the index of the clicked node
     const clickedNodeIndex = data.nodes.findIndex(
       (node) => node.id === clickedNodeData.id
     );
 
     if (clickedNodeIndex !== -1) {
-      // Check if the edited values are the same as the existing node values
       const isSameValues = Object.keys(values).every(
         (key) => values[key] === clickedNodeData[key]
       );
 
       if (isSameValues) {
-        // No need to update if values are the same, just close the modal
         setNodeEditModalVisibility(false);
         return;
       }
@@ -440,10 +428,7 @@ function ContextMenu({
       // Update the data state with the new nodes and connected edges
       setData({
         nodes: updatedNodes,
-        edges: [
-          ...data.edges.filter((edge) => edge === null),
-          ...updatedConnectedEdges,
-        ],
+        edges: updatedConnectedEdges,
       });
 
       setNodeEditModalVisibility(false);
@@ -753,9 +738,6 @@ function ContextMenu({
                 {clickedNodeData.ip_address}
               </div>
             </div>
-            {/* <div className={styles.chartBox}>
-              <HighchartsReact highcharts={Highcharts} options={chartOptions} />
-            </div> */}
 
             <div className={styles.chartBox}>
               <HighchartsReact

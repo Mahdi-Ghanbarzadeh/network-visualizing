@@ -56,8 +56,6 @@ const GraphVisualization = ({
   // draw edge
   const [isDrawingEdge, setIsDrawingEdge] = useState(false);
   const [drawingStartNode, setDrawingStartNode] = useState(null);
-  const [drawingEndNode, setDrawingEndNode] = useState(null);
-  const [showDragLine, setShowDragLine] = useState(false);
 
   // Create a ref to store the graph
   const graphRef = useRef();
@@ -216,7 +214,6 @@ const GraphVisualization = ({
 
   // Use useEffect hook to update the show traffic flow
   useEffect(() => {
-    console.log("Use useEffect hook to update the show traffic flow");
     // to simulate and update visualization
     if (linkRef.current) {
       linkRef.current.remove();
@@ -764,9 +761,6 @@ const GraphVisualization = ({
           if (distanceToNode(event, clickedNode) <= node_radius) {
             setIsDrawingEdge(true);
             setDrawingStartNode(clickedNode);
-            setDrawingEndNode(null);
-
-            setShowDragLine(true); // Show the drag line when starting to draw
           }
         }
       }
@@ -860,8 +854,6 @@ const GraphVisualization = ({
 
         setIsDrawingEdge(false);
         setDrawingStartNode(null);
-        setDrawingEndNode(null);
-        setShowDragLine(false); // Hide the drag line when the drawing is complete
 
         // Clear drag line coordinates
         dragLine.attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 0);
@@ -1134,9 +1126,7 @@ const GraphVisualization = ({
         downloadGraphImage={downloadGraphImage}
       ></Menu>
       <div ref={containerGraphRef}>
-        <svg ref={graphRef}>
-          {/* Create a container for the graph elements */}
-        </svg>
+        <svg ref={graphRef}></svg>
 
         <Modal
           title="Are you sure?"
@@ -1214,6 +1204,7 @@ const GraphVisualization = ({
         currentMenuContext={currentMenuContext}
         deleteAvailable={deleteAvailable}
         device_types={device_types}
+        simulationRef={simulationRef}
       />
     </div>
   );
